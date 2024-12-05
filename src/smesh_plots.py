@@ -11,7 +11,9 @@ import datetime
 
 
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
-                              sensor_headers: dict):
+                              sensor_headers: dict,
+                              event_datetimes: list = None,
+                              logy: bool = False) -> tuple:
     """
     Plot each sensor variable by row
     """
@@ -36,6 +38,13 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
         axes[var_id].set_ylabel(sensed_var)
         axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
                             markerscale=3)
+        
+        if event_datetimes is not None:
+            for event_time in event_datetimes:
+                axes[var_id].axvline(x=event_time, color='k', linestyle='--')
+
+        if logy:
+            axes[var_id].set_yscale('log')
 
         # if var_id == 0:
         #     axes[var_id].legend(bbox_to_anchor=(1.05, 1), loc='upper left')

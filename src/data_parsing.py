@@ -2,6 +2,9 @@ import datetime
 import pathlib         # Nicer IO than the os library
 import pandas as pd
 
+# Custom imports
+from terminal_utils import with_color
+
 def read_csv_data_from_logger(logger: str, folderpath: str, 
                               sensor_list: list,
                               data_headers: dict,
@@ -24,7 +27,8 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
     data_dfs = {}
 
     for sensor in sensor_list:
-        print(f"[{datetime.datetime.now()}] Trying to open data for", sensor)
+        print(f"[{datetime.datetime.now()}] Trying to open data for " + \
+              with_color(sensor) + "...")
         data_path = pathlib.Path(folderpath + logger + "_" + sensor + extension)
         if not data_path.exists():
             print(f"Current working directory: {pathlib.Path.cwd()}")
@@ -41,6 +45,6 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
         # Include the short name out of convenience
         data_dfs[sensor]['from_short_name'] = data_dfs[sensor]['from_node'].str[-4:]
 
-        print(f"[{datetime.datetime.now()}] Sensor completed!\n")
+        print(f"[{datetime.datetime.now()}] ... Sensor completed!")
 
     return data_dfs
