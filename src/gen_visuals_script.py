@@ -7,7 +7,7 @@ import pathlib         # Nicer IO than the os library
 # Custom imports
 from data_parsing import read_csv_data_from_logger
 from smesh_plots import plot_all_sensor_variables, plot_correlation_matrix, \
-    plot_correlation_scatter
+    plot_correlation_scatter, plot_datetime_histogram
 from terminal_utils import with_color
 
 ########################################################
@@ -67,40 +67,51 @@ pepperwood_data_dfs = read_csv_data_from_logger(
 print(f"[{datetime.datetime.now()}] Data loaded!")
 
 ## Plotting
+# for sensor in SENSOR_NAMES:
+#     print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)}...")
+#     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
+#                                           sensor_headers=SENSOR_HEADERS,
+#                                           event_datetimes=EVENT_DATETIMES)
+#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars.png", dpi=DPI)
+#     plt.close(fig)
+
+#     print(f"[{datetime.datetime.now()}] ... {sensor} plotted!")
+
+# # Not plot pmsa with logy scale
+# for sensor in LOG_Y_NAMES:
+#     print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)} with logy scale...")
+#     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
+#                                           sensor_headers=SENSOR_HEADERS,
+#                                           event_datetimes=EVENT_DATETIMES,
+#                                           logy=True)
+#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars_logy.png", dpi=DPI)
+#     plt.close(fig)
+
+#     print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
+
+# # Plot correlation matrix and scatter
+# for sensor in SENSOR_NAMES:
+#     print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
+#     fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
+#                                         sensor_headers=SENSOR_HEADERS)
+#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_matrix.png", dpi=DPI, 
+#                 bbox_inches='tight')
+#     plt.close(fig)
+
+#     fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
+#                                         sensor_headers=SENSOR_HEADERS)
+#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_scatter.png", dpi=DPI,
+#                 bbox_inches='tight')
+
+#     print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")
+
+# Plot datetime histogram
 for sensor in SENSOR_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)}...")
-    fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-                                          sensor_headers=SENSOR_HEADERS,
-                                          event_datetimes=EVENT_DATETIMES)
-    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars.png", dpi=DPI)
-    plt.close(fig)
-
-    print(f"[{datetime.datetime.now()}] ... {sensor} plotted!")
-
-# Not plot pmsa with logy scale
-for sensor in LOG_Y_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)} with logy scale...")
-    fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-                                          sensor_headers=SENSOR_HEADERS,
-                                          event_datetimes=EVENT_DATETIMES,
-                                          logy=True)
-    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars_logy.png", dpi=DPI)
-    plt.close(fig)
-
-    print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
-
-
-for sensor in SENSOR_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
-    fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
-                                        sensor_headers=SENSOR_HEADERS)
-    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_matrix.png", dpi=DPI, 
+    print(f"[{datetime.datetime.now()}] Plotting datetime histogram for {with_color(sensor)}...")
+    fig, axes = plot_datetime_histogram(pepperwood_data_dfs, sensor=sensor,
+                                        event_datetimes=EVENT_DATETIMES)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_datetime_histogram.png", dpi=DPI, 
                 bbox_inches='tight')
     plt.close(fig)
 
-    fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
-                                        sensor_headers=SENSOR_HEADERS)
-    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_scatter.png", dpi=DPI,
-                bbox_inches='tight')
-
-    print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")
+    print(f"[{datetime.datetime.now()}] ... {sensor} datetime histogram plotted!")

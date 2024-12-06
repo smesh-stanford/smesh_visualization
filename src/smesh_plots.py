@@ -10,6 +10,30 @@ import datetime
 #     print("Astral library not available")
 
 
+def highlight_nighttime(ax, curr_data_df):
+    """
+    Highlight the nighttime in the plot
+    """
+    # Fill in the x-axis with grey from 6pm to 6am to represent night time
+    earliest_day = curr_data_df['datetime'].iloc[0].date()
+    latest_day = curr_data_df['datetime'].iloc[-1].date()
+
+    sunrise = datetime.datetime.strptime("06:00:00", "%H:%M:%S").time() 
+    sunset = datetime.datetime.strptime("18:00:00", "%H:%M:%S").time()
+
+    # Print each day between the earliest and latest day
+    num_days = (latest_day - earliest_day).days + 2
+    for i in range(num_days):
+        curr_day = earliest_day + datetime.timedelta(days=i)
+
+        curr_sunrise_datetime = datetime.datetime.combine(curr_day, sunrise)
+        curr_sunset_datetime = datetime.datetime.combine(curr_day, sunset)
+        ax.axvspan(
+                        curr_sunset_datetime - datetime.timedelta(days=1), 
+                        curr_sunrise_datetime, 
+                        color='grey', alpha=0.25, zorder=0)
+
+
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
                               sensor_headers: dict,
                               event_datetimes: list = None,
@@ -54,27 +78,9 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
     minx, maxx = plt.xlim()
     plt.xlabel('Date and Time')
 
-    # Fill in the x-axis with grey from 6pm to 6am to represent night time
-    # print("Datetimes")
-    # print(curr_data_df['datetime'])
-    earliest_day = curr_data_df['datetime'].iloc[0].date()
-    latest_day = curr_data_df['datetime'].iloc[-1].date()
-
-    sunrise = datetime.datetime.strptime("06:00:00", "%H:%M:%S").time() 
-    sunset = datetime.datetime.strptime("18:00:00", "%H:%M:%S").time()
-
-    # Print each day between the earliest and latest day
-    num_days = (latest_day - earliest_day).days + 2
+    # Fill in the x-axis with grey to represent night time
     for var_id in range(len(sensor_vars)):
-        for i in range(num_days):
-            curr_day = earliest_day + datetime.timedelta(days=i)
-
-            curr_sunrise_datetime = datetime.datetime.combine(curr_day, sunrise)
-            curr_sunset_datetime = datetime.datetime.combine(curr_day, sunset)
-            axes[var_id].axvspan(
-                            curr_sunset_datetime - datetime.timedelta(days=1), 
-                            curr_sunrise_datetime, 
-                            color='grey', alpha=0.25, zorder=0)
+        highlight_nighttime(axes[var_id], curr_data_df)
 
     # if astral_available:
     #     city = astral.LocationInfo("City", "Region", "Country", 0, 0)
@@ -190,16 +196,32 @@ def plot_correlation_scatter(data_dict: dict, sensor: str,
     cbar.set_ticks(cticks)
     cbar.set_ticklabels(ctick_labels)
 
-    # Incorrect since it is not at midnight
-    # cbar_ticks = cbar.get_ticks()  
-    # print(f"Ticks: {cbar_ticks}")
-    # cbar_datetime_ticks = []
-    # for ctick in cbar_ticks:
-    #     ctick_datetime = starting_datetime + datetime.timedelta(days=ctick)
-    #     ctick_datetime_str = ctick_datetime.strftime("%Y-%m-%d")
-    #     cbar_datetime_ticks.append(ctick_datetime_str)
-
-    # cbar.set_ticks(cbar_ticks[:-1])
-    # cbar.set_ticklabels(cbar_datetime_ticks[:-1])
-
     return fig, axes
+
+
+def plot_datetime_histogram(data_dict: dict, sensor: str,
+                            event_datetimes: list = None) -> tuple:
+    """
+    Plot the histogram of the datetime values. Since the sensor data comes as
+    a packet, we only need to plot the time of the packet.
+    """
+    curr_data_df = data_dict[sensor]
+    datetime_values = curr_data_df['datetime']
+
+    num_days = (datetime_values.iloc[-1] - datetime_values.iloc[0]).days + 1
+    
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.hist(datetime_values, bins=num_days * 24 * 4)
+
+    plt.xticks(rotation=45)
+    ax.set_xlabel('Date and Time')
+    ax.set_ylabel(f"Number of measurements per 15 minutes")
+    plt.title(f'Temporal Histogram of {sensor} readings')
+
+    if event_datetimes is not None:
+        for event_time in event_datetimes:
+            ax.axvline(x=event_time, color='k', linestyle='--')
+
+    highlight_nighttime(ax, curr_data_df)
+    
+    return fig, ax
