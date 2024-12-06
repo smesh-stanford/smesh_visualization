@@ -6,8 +6,10 @@ import pathlib         # Nicer IO than the os library
 
 # Custom imports
 from data_parsing import read_csv_data_from_logger
-from smesh_plots import plot_all_sensor_variables, plot_correlation_matrix, \
-    plot_correlation_scatter, plot_datetime_histogram
+from smesh_plots import plot_all_sensor_variables, \
+    plot_correlation_matrix, plot_correlation_scatter, \
+    plot_datetime_histogram, plot_sensor_interval, \
+    plot_sensor_interval_boxplot
 from terminal_utils import with_color
 
 ########################################################
@@ -39,6 +41,13 @@ DPI = 300
 
 LOG_Y_NAMES = ["pmsa003i"]
 
+INTERVAL_BOUNDS = {
+    "device_metrics":   [60 * 5.5, 60 * 6.5],
+    "bme688":           [50, 70],
+    "ina260":           [60 * 4.5, 60 * 5.5],
+    "pmsa003i":         [50, 70],
+}
+
 ########################################################
 # Events Configuration (should be in a yml file)
 ########################################################
@@ -66,44 +75,44 @@ pepperwood_data_dfs = read_csv_data_from_logger(
     extension="_modified.csv")
 print(f"[{datetime.datetime.now()}] Data loaded!")
 
-## Plotting
-# for sensor in SENSOR_NAMES:
-#     print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)}...")
-#     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-#                                           sensor_headers=SENSOR_HEADERS,
-#                                           event_datetimes=EVENT_DATETIMES)
-#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars.png", dpi=DPI)
-#     plt.close(fig)
+# Plotting
+for sensor in SENSOR_NAMES:
+    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)}...")
+    fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
+                                          sensor_headers=SENSOR_HEADERS,
+                                          event_datetimes=EVENT_DATETIMES)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars.png", dpi=DPI)
+    plt.close(fig)
 
-#     print(f"[{datetime.datetime.now()}] ... {sensor} plotted!")
+    print(f"[{datetime.datetime.now()}] ... {sensor} plotted!")
 
-# # Not plot pmsa with logy scale
-# for sensor in LOG_Y_NAMES:
-#     print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)} with logy scale...")
-#     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-#                                           sensor_headers=SENSOR_HEADERS,
-#                                           event_datetimes=EVENT_DATETIMES,
-#                                           logy=True)
-#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars_logy.png", dpi=DPI)
-#     plt.close(fig)
+# Not plot pmsa with logy scale
+for sensor in LOG_Y_NAMES:
+    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)} with logy scale...")
+    fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
+                                          sensor_headers=SENSOR_HEADERS,
+                                          event_datetimes=EVENT_DATETIMES,
+                                          logy=True)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_all_vars_logy.png", dpi=DPI)
+    plt.close(fig)
 
-#     print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
+    print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
 
-# # Plot correlation matrix and scatter
-# for sensor in SENSOR_NAMES:
-#     print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
-#     fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
-#                                         sensor_headers=SENSOR_HEADERS)
-#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_matrix.png", dpi=DPI, 
-#                 bbox_inches='tight')
-#     plt.close(fig)
+# Plot correlation matrix and scatter
+for sensor in SENSOR_NAMES:
+    print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
+    fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
+                                        sensor_headers=SENSOR_HEADERS)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_matrix.png", dpi=DPI, 
+                bbox_inches='tight')
+    plt.close(fig)
 
-#     fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
-#                                         sensor_headers=SENSOR_HEADERS)
-#     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_scatter.png", dpi=DPI,
-#                 bbox_inches='tight')
+    fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
+                                        sensor_headers=SENSOR_HEADERS)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_scatter.png", dpi=DPI,
+                bbox_inches='tight')
 
-#     print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")
+    print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")
 
 # Plot datetime histogram
 for sensor in SENSOR_NAMES:
@@ -111,6 +120,36 @@ for sensor in SENSOR_NAMES:
     fig, axes = plot_datetime_histogram(pepperwood_data_dfs, sensor=sensor,
                                         event_datetimes=EVENT_DATETIMES)
     fig.savefig(f"{PLOTFOLDERPATH}{sensor}_datetime_histogram.png", dpi=DPI, 
+                bbox_inches='tight')
+    plt.close(fig)
+
+    fig, axes = plot_sensor_interval(pepperwood_data_dfs, sensor=sensor,
+                                        event_datetimes=EVENT_DATETIMES)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_sensor_interval.png", dpi=DPI,
+                bbox_inches='tight')
+    plt.close(fig)
+
+    fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_sensor_interval_boxplot.png", dpi=DPI,
+                bbox_inches='tight')
+    plt.close(fig)
+
+    min_time, max_time = INTERVAL_BOUNDS[sensor]
+    min_time = int(min_time)
+    max_time = int(max_time)
+    fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor, 
+                    max_time=max_time, min_time=min_time,
+                    lim_bounds=True)
+    appendix = f"boxplot_bound_{min_time}-{max_time}s"
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_sensor_interval_{appendix}.png", dpi=DPI,
+                bbox_inches='tight')
+    plt.close(fig)
+
+    fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor, 
+                    max_time=max_time, min_time=min_time,
+                    lim_bounds=True, violin_version=True)
+    appendix = f"violin_bound_{min_time}-{max_time}s"
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_sensor_interval_{appendix}.png", dpi=DPI,
                 bbox_inches='tight')
     plt.close(fig)
 

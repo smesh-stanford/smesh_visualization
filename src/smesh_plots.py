@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import datetime
 
 # try:
@@ -224,4 +225,123 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
 
     highlight_nighttime(ax, curr_data_df)
     
+    return fig, ax
+
+
+def get_sensor_interval(data_dict: dict, sensor: str,
+                        max_time = 60 * 60 * 3) -> dict:
+    """
+    Get the interval between the sensor readings by node
+    """
+    curr_data_df = data_dict[sensor]
+    col_id = 'from_short_name'
+
+    all_intervals = {}
+    all_datetimes = {}
+
+    for node_name, node_data in curr_data_df.groupby(col_id):
+        diff_from_prev = node_data['datetime'].diff().dt.total_seconds()
+
+        # if the gap is too large, we assume that the sensor or logger was 
+        # turned off and we don't plot the gap
+        diff_to_plot = diff_from_prev[diff_from_prev < max_time]
+        datetime_to_plot = node_data['datetime'][diff_from_prev < max_time]
+
+        all_intervals[node_name] = diff_to_plot
+        all_datetimes[node_name] = datetime_to_plot
+
+    return all_intervals, all_datetimes
+
+
+def plot_sensor_interval(data_dict: dict, sensor: str,
+                          event_datetimes: list = None,
+                          max_time = 60 * 60 * 3, show_max: bool = False) -> tuple:
+    """
+    Plot the interval between the sensor readings by node
+    """
+    curr_data_df = data_dict[sensor]
+    all_intervals, all_datetimes = get_sensor_interval(data_dict, sensor, max_time)
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    for node_name, node_intervals in all_intervals.items():
+        ax.scatter(all_datetimes[node_name], node_intervals, 
+                   label=node_name, s=1)
+    
+    plt.xticks(rotation=45)
+    ax.set_xlabel('Date and Time')
+    max_time_str = str(int(max_time / 60 / 60))
+    ax.set_ylabel(f'Time interval between readings (s, max of {max_time_str} hr)')
+    plt.title(f'Time Interval between {sensor} readings')
+
+    # plt.axhline(y=0, color='k', linestyle='--', label='0 sec gap')
+
+    if show_max:
+        plt.axhline(y=max_time, color='r', linestyle='--', label=f'{max_time_str} hr gap')
+
+    if event_datetimes is not None:
+        for event_time in event_datetimes:
+            ax.axvline(x=event_time, color='k', linestyle='--')
+
+    highlight_nighttime(ax, curr_data_df)
+    ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)
+
+    return fig, ax
+
+
+def plot_sensor_interval_boxplot(data_dict: dict, sensor: str,
+                                 max_time = 60 * 60 * 3,
+                                 min_time = -60 * 60 * 3, 
+                                 lim_bounds: bool = False,
+                                 violin_version: bool = False) -> tuple:
+    """
+    Plot the interval between the sensor readings by node
+    """
+    cut = max_time if violin_version else 1e9
+    all_intervals, _ = get_sensor_interval(data_dict, sensor, cut)
+
+    # Remove empty nodes
+    all_intervals = {node_name: node_intervals for node_name, node_intervals \
+                     in all_intervals.items() if len(node_intervals) > 10}
+    
+    fig, ax = plt.subplots(figsize=(8, 4))
+
+    if violin_version:
+        # convert to list of arrays for violinplot
+        # all_intervals_list = []
+        all_intervals_names = []
+        for node_ind, (node_name, node_intervals) in enumerate(all_intervals.items()):
+            # all_intervals_list.append(node_intervals.values)
+            all_intervals_names.append(node_name)
+            node_vals = node_intervals.values
+            num_measurements = len(node_vals)
+            # print(f"Node {node_name} has {num_measurements} measurements")
+            ax.violinplot(node_vals, positions=[node_ind], 
+                          showextrema=False, showmedians=True,
+                          points=num_measurements // 5)
+        
+        # ax.violinplot(all_intervals_list, positions= showextrema=True, showmedians=True)
+        ax.set_xticks(range(0, len(all_intervals_names)))
+        ax.set_xticklabels(all_intervals_names)
+    else:
+        flierprops = dict(marker='_', markeredgecolor='tab:grey')
+        ax.boxplot(all_intervals.values(), labels=all_intervals.keys(), flierprops=flierprops)
+
+    plt.xticks(rotation=45)
+    ax.set_xlabel('Node Name')
+    # max_time_str = f"{(max_time / 60):.2f} min"
+    ax.set_ylabel(f'Time interval between readings (s)')
+    #   , max of {max_time_str})')
+    title = f'Time Interval between {sensor} readings'
+    if lim_bounds:
+        title += f" (between {min_time} and {max_time} s)"
+    plt.title(title)
+
+    plt.axhline(y=0, color='b', linestyle='--', label='0 sec gap')
+    plt.grid(True, axis='y')
+
+    if lim_bounds:
+        # plt.axhline(y=max_time, color='r', linestyle='--', label=f'{max_time_str} hr gap')
+        # plt.axhline(y=min_time, color='r', linestyle='--', label=f'{max_time_str} hr gap')
+        plt.ylim([min_time, max_time])
+
     return fig, ax
