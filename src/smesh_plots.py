@@ -10,6 +10,22 @@ import datetime
 #     astral_available = False
 #     print("Astral library not available")
 
+def save_plot_helper(fig, folder, filename, dpi=300):
+    """
+    Save the plot to the filename with the specified dpi
+
+    Inputs:
+        fig: matplotlib.figure.Figure - The figure to save
+        folder: pathlib.Path          - The folder to save the figure
+        filename: str                 - The filename to save the figure
+        dpi: int                      - The dpi to save the figure
+    
+    Outputs:
+        None
+    """
+    fig.savefig(folder / filename, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+
 
 def highlight_nighttime(ax, curr_data_df):
     """
@@ -33,6 +49,20 @@ def highlight_nighttime(ax, curr_data_df):
                         curr_sunset_datetime - datetime.timedelta(days=1), 
                         curr_sunrise_datetime, 
                         color='grey', alpha=0.25, zorder=0)
+
+
+def add_event_lines(ax, curr_data_df, event_datetimes):
+    """
+    Add vertical lines for the events if they are relevant to the current plot
+    """
+    # Get the datetime bounds of the plot since the events
+    # may be outside the bounds if the data was trimmed
+    min_datetime = curr_data_df['datetime'].iloc[0]
+    max_datetime = curr_data_df['datetime'].iloc[-1]
+
+    for event_time in event_datetimes:
+        if event_time > min_datetime and event_time < max_datetime:
+            ax.axvline(x=event_time, color='k', linestyle='--')
 
 
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
@@ -65,8 +95,7 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
                             markerscale=3)
         
         if event_datetimes is not None:
-            for event_time in event_datetimes:
-                axes[var_id].axvline(x=event_time, color='k', linestyle='--')
+            add_event_lines(axes[var_id], curr_data_df, event_datetimes)
 
         if logy:
             axes[var_id].set_yscale('log')
@@ -220,8 +249,7 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
     plt.title(f'Temporal Histogram of {sensor} readings')
 
     if event_datetimes is not None:
-        for event_time in event_datetimes:
-            ax.axvline(x=event_time, color='k', linestyle='--')
+        add_event_lines(ax, curr_data_df, event_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     
@@ -279,8 +307,7 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
         plt.axhline(y=max_time, color='r', linestyle='--', label=f'{max_time_str} hr gap')
 
     if event_datetimes is not None:
-        for event_time in event_datetimes:
-            ax.axvline(x=event_time, color='k', linestyle='--')
+        add_event_lines(ax, curr_data_df, event_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)

@@ -48,3 +48,59 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
         print(f"[{datetime.datetime.now()}] ... Sensor completed!")
 
     return data_dfs
+
+
+def trim_datetime_range(data_dfs: dict, 
+                        start_datetime_str: str, end_datetime_str: str) -> dict:
+    """
+    Trim the datetime range of the dataframes in the dictionary.
+
+    Inputs:
+        data_dfs: dict          - A dictionary of pandas dataframes
+        start_datetime_str: str - A string to the start datetime
+        end_datetime_str: str   - A string to the end datetime
+
+    Outputs:
+        trimmed_data_dfs: dict - A dictionary of pandas dataframes
+    """
+    trimmed_data_dfs = {}
+
+    # Convert the strings to datetime objects
+    start_datetime = datetime.datetime.strptime(
+        start_datetime_str, "%Y-%m-%d %H:%M:%S")
+    end_datetime = datetime.datetime.strptime(
+        end_datetime_str, "%Y-%m-%d %H:%M:%S")
+
+    for sensor, df in data_dfs.items():
+        trimmed_data_dfs[sensor] = df[(df['datetime'] >= start_datetime) & 
+                                      (df['datetime'] <= end_datetime)]
+
+    return trimmed_data_dfs
+
+
+def make_folder_datetime_range(plots_folder: pathlib.Path, 
+                               start_datetime_str: str, 
+                               end_datetime_str: str) -> pathlib.Path:
+    """
+    Add a folder within the plots folder that includes the datetime range using 
+    Pathlib.
+
+    Inputs:
+        plots_folder: pathlib.Path - A Path object to the plots folder
+        start_datetime_str: str    - A string to the start datetime
+        end_datetime_str: str      - A string to the end datetime
+    
+    Outputs:
+        datetime_folder: pathlib.Path - A Path object to the datetime folder
+    """
+
+    # Datetime is in the format "YYYY-MM-DD HH:MM:SS" which is not a valid
+    # folder name. We can replace the spaces with underscores and the colons
+    # with dashes.
+    start_datetime_str = start_datetime_str.replace(" ", "_").replace(":", "-")
+    end_datetime_str = end_datetime_str.replace(" ", "_").replace(":", "-")
+
+    datetime_folder = plots_folder / f"{start_datetime_str}_{end_datetime_str}"
+    datetime_folder.mkdir(exist_ok=True)
+
+    return datetime_folder
