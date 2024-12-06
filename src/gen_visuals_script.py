@@ -6,7 +6,8 @@ import pathlib         # Nicer IO than the os library
 
 # Custom imports
 from data_parsing import read_csv_data_from_logger
-from smesh_plots import plot_all_sensor_variables
+from smesh_plots import plot_all_sensor_variables, plot_correlation_matrix, \
+    plot_correlation_scatter
 from terminal_utils import with_color
 
 ########################################################
@@ -87,3 +88,19 @@ for sensor in LOG_Y_NAMES:
     plt.close(fig)
 
     print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
+
+
+for sensor in SENSOR_NAMES:
+    print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
+    fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
+                                        sensor_headers=SENSOR_HEADERS)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_matrix.png", dpi=DPI, 
+                bbox_inches='tight')
+    plt.close(fig)
+
+    fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
+                                        sensor_headers=SENSOR_HEADERS)
+    fig.savefig(f"{PLOTFOLDERPATH}{sensor}_correlation_scatter.png", dpi=DPI,
+                bbox_inches='tight')
+
+    print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")

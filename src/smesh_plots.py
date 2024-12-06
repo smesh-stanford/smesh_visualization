@@ -88,3 +88,118 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
     plt.tight_layout()
 
     return fig, axes
+
+
+def plot_correlation_matrix(data_dict: dict, sensor: str,
+                            sensor_headers: dict) -> tuple:
+    """
+    Plot the correlation matrix for the sensor variables
+    """
+    curr_data_df = data_dict[sensor]
+    sensor_vars = sensor_headers[sensor]
+    corr_matrix = curr_data_df[sensor_vars].corr()
+    num_vars = len(sensor_vars)
+
+    # print(f"Correlation matrix for {sensor}")
+    # print(corr_matrix)
+
+    fig, ax = plt.subplots(figsize=(num_vars + 1, num_vars + 1))
+    plt.clf()
+    # Note that matshow is not compatible with tight_layout
+    plt.matshow(corr_matrix, fignum=fig.number,
+                vmin=-1, vmax=1, cmap='PuOr')
+    plt.colorbar()
+    vars_list = range(num_vars)
+    plt.xticks(vars_list, sensor_vars, rotation=45)
+    plt.yticks(vars_list, sensor_vars)
+    
+    # Annotate the correlation values
+    for i in range(num_vars):
+        for j in range(num_vars):
+            curr_val = corr_matrix.iloc[i, j]
+            annot_color = 'white' if abs(curr_val) > 0.5 else 'black'
+            plt.text(j, i, f"{corr_matrix.iloc[i, j]:.2f}",
+                     ha='center', va='center', color=annot_color)
+
+    return fig, ax
+
+
+def plot_correlation_scatter(data_dict: dict, sensor: str,
+                             sensor_headers: dict) -> tuple:
+    """
+    Plot the correlation scatter plot for the sensor variables
+    """
+    curr_data_df = data_dict[sensor]
+    sensor_vars = sensor_headers[sensor]
+    num_vars = len(sensor_vars)
+
+    fig, axes = plt.subplots(nrows = num_vars, ncols=num_vars,
+                             figsize=(2 * num_vars + 1, 2 * num_vars),
+                             sharex='col', sharey='row')
+
+    starting_datetime = curr_data_df['datetime'].iloc[0]
+    diff_from_start = curr_data_df['datetime'] - starting_datetime
+
+    dt_time_to_days = lambda x: x.total_seconds() / (60 * 60 * 24)
+    diff_from_start_in_days = diff_from_start.apply(dt_time_to_days)
+
+    for i, var1 in enumerate(sensor_vars):
+        for j, var2 in enumerate(sensor_vars):
+            # Color by the index of the data
+            im_for_colorbar = axes[j, i].scatter(
+                                x=var1, y=var2,
+                                data=curr_data_df, s=0.25,
+                                c=diff_from_start_in_days)
+                                # c=curr_data_df["datetime"].apply(lambda x: x.timestamp()))
+                                # c=range(len(curr_data_df)))
+            axes[j, i].grid(True)
+
+            # only set the x-axis label for the bottom row
+            if j == 0:
+                axes[j, i].set_xlabel(var1)
+                axes[j, i].xaxis.set_label_position('top')
+            elif j == num_vars - 1:
+                axes[j, i].set_xlabel(var1)
+                # axes[j, i].xaxis.tick_top()
+                # axes[j, i].xaxis.set_label_position('top')
+            
+            # only set the y-axis label for the left column
+            if i == 0:
+                axes[j, i].set_ylabel(var2)
+    
+    plt.tight_layout()
+
+    fig.subplots_adjust(right=0.8)
+    # We make the colorbar thin to avoid taking up too much space
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.03, 0.7])
+    cbar = fig.colorbar(im_for_colorbar, cax=cbar_ax, shrink=0.1)
+    cbar.ax.set_ylabel("Date (at midnight)", rotation=-90, va="bottom")
+
+    total_num_days = int(diff_from_start_in_days.iloc[-1])
+    first_midnight_datetime = starting_datetime.replace(
+        hour=0, minute=0, second=0, microsecond=0)
+
+    cticks = []
+    ctick_labels = []
+
+    for i in range(1, total_num_days + 1):
+        curr_datetime = first_midnight_datetime + datetime.timedelta(days=i)
+        cticks.append(i)
+        ctick_labels.append(curr_datetime.strftime("%Y-%m-%d"))
+
+    cbar.set_ticks(cticks)
+    cbar.set_ticklabels(ctick_labels)
+
+    # Incorrect since it is not at midnight
+    # cbar_ticks = cbar.get_ticks()  
+    # print(f"Ticks: {cbar_ticks}")
+    # cbar_datetime_ticks = []
+    # for ctick in cbar_ticks:
+    #     ctick_datetime = starting_datetime + datetime.timedelta(days=ctick)
+    #     ctick_datetime_str = ctick_datetime.strftime("%Y-%m-%d")
+    #     cbar_datetime_ticks.append(ctick_datetime_str)
+
+    # cbar.set_ticks(cbar_ticks[:-1])
+    # cbar.set_ticklabels(cbar_datetime_ticks[:-1])
+
+    return fig, axes
