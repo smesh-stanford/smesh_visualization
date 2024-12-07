@@ -247,11 +247,14 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
     ax.set_xlabel('Date and Time')
     ax.set_ylabel(f"Number of measurements per 15 minutes")
     plt.title(f'Temporal Histogram of {sensor} readings')
+    
+    minx, maxx = plt.xlim()
 
     if event_datetimes is not None:
         add_event_lines(ax, curr_data_df, event_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
+    plt.xlim([minx, maxx])
     
     return fig, ax
 
@@ -302,6 +305,8 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
     plt.title(f'Time Interval between {sensor} readings')
 
     # plt.axhline(y=0, color='k', linestyle='--', label='0 sec gap')
+    
+    minx, maxx = plt.xlim()
 
     if show_max:
         plt.axhline(y=max_time, color='r', linestyle='--', label=f'{max_time_str} hr gap')
@@ -311,6 +316,8 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
 
     highlight_nighttime(ax, curr_data_df)
     ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)
+
+    plt.xlim([minx, maxx])
 
     return fig, ax
 
