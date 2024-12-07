@@ -53,6 +53,9 @@ INTERVAL_BOUNDS = {
 START_DATETIME = "2024-11-08 10:00:00"
 END_DATETIME = "2024-11-12 10:00:00"
 
+# START_DATETIME = ""
+# END_DATETIME = ""
+
 ########################################################
 # Events Configuration (should be in a yml file)
 ########################################################
