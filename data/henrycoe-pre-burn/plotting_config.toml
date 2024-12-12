@@ -19,17 +19,17 @@ pmsa003i = ["pm10Standard", "pm25Standard", "pm100Standard",
 ########################################################
 
 [IO_CONFIG]
-DATAFOLDERPATH = "data/pepperwood-post-burn/"
+DATAFOLDERPATH = "data/henrycoe-pre-burn/"
 LOGGER = "62e4"
-START_DATETIME = "" # "2024-11-08 10:00:00"
-END_DATETIME = "" #"2024-11-12 10:00:00"
+START_DATETIME = ""
+END_DATETIME = ""
 
 ########################################################
 # Plotting Configuration
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/pepperwood-post-burn/"
+PLOTFOLDERPATH = "plots/henrycoe-pre-burn/"
 DPI = 300
 
 LOG_Y_NAMES = ["pmsa003i"]

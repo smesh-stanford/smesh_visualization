@@ -54,7 +54,19 @@ class Config:
     event_datetimes: List[datetime.datetime]
 
     @classmethod
-    def from_toml(cls, path: pathlib.Path) -> "Config":
+    def from_toml(cls, path: pathlib.Path, 
+                  datetime_format: str = "%Y-%m-%d %H:%M:%S") -> "Config":
+        """
+        Create a Config object from a TOML file.
+
+        Inputs:
+            cls: type - The class
+            path: pathlib.Path - The path to the TOML file
+            datetime_format: str - The datetime format of entries in the TOML
+        
+        Outputs:
+            config: Config - The Config object instance        
+        """
         with open(path) as f:
             top_config = toml.load(f)
 
@@ -72,13 +84,22 @@ class Config:
                 for sensor in sensor_names
         }
 
-        datetime_format = "%Y-%m-%d %H:%M:%S"
-        start_datetime = datetime.datetime.strptime(
-            io_config["START_DATETIME"], datetime_format
-        )
-        end_datetime = datetime.datetime.strptime(
-            io_config["END_DATETIME"], datetime_format
-        )
+        # Note that we _need_ to account for the case where the strings are empty
+        # since we cannot strptime an empty string
+        if not io_config["START_DATETIME"]:
+            start_datetime = None
+        else:
+            start_datetime = datetime.datetime.strptime(
+                io_config["START_DATETIME"], datetime_format
+            )
+
+        if not io_config["END_DATETIME"]:
+            end_datetime = None
+        else:
+            end_datetime = datetime.datetime.strptime(
+                io_config["END_DATETIME"], datetime_format
+            )
+        
         event_datetimes = [
             datetime.datetime.strptime(event_time, datetime_format)
             for event_time in events_config["EVENT_DATETIMES"]

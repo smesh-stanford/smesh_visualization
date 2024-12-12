@@ -48,13 +48,11 @@ if config.start_datetime and config.end_datetime:
         pepperwood_data_dfs, config.start_datetime, config.end_datetime)
     now_print(f"Datetime range trimmed!")
 
-    # Make the folder for the datetime range
-    plots_folder = make_folder_datetime_range(
-        pathlib.Path(config.plot_folder_path), config.start_datetime, config.end_datetime)
-
-else:
-    # The strings are empty
-    plots_folder = pathlib.Path(config.plot_folder_path)
+# Make the folder for the datetime range
+# This fuction will account for the case where the datetimes are None
+plots_folder = make_folder_datetime_range(
+    pathlib.Path(config.plot_folder_path), 
+    config.start_datetime, config.end_datetime)
 
 
 # Plotting

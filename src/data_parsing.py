@@ -105,17 +105,21 @@ def make_folder_datetime_range(plots_folder: pathlib.Path,
             print(f"Could not convert plots_folder to a Path object. Error: {e}")
             raise e
 
-    assert isinstance(start_datetime, datetime.datetime), \
+    assert isinstance(start_datetime, datetime.datetime) or start_datetime is None, \
         f"start_datetime is not a datetime.datetime object. It is a {type(start_datetime)}"
-    assert isinstance(end_datetime, datetime.datetime), \
+    assert isinstance(end_datetime, datetime.datetime) or start_datetime is None, \
         f"end_datetime is not a datetime.datetime object. It is a {type(end_datetime)}"
     
-    # Convert the datetime objects to strings as
-    # "YYYY-MM-DD_HH-MM-SS"
-    start_datetime_str = start_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-    end_datetime_str = end_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+    if start_datetime is None or end_datetime is None:
+        datetime_folder = plots_folder / f"full_timeseries"
+    else:    
+        # Convert the datetime objects to strings as
+        # "YYYY-MM-DD_HH-MM-SS"
+        start_datetime_str = start_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+        end_datetime_str = end_datetime.strftime("%Y-%m-%d_%H-%M-%S")
 
-    datetime_folder = plots_folder / f"{start_datetime_str}_{end_datetime_str}"
-    datetime_folder.mkdir(exist_ok=True)
+        datetime_folder = plots_folder / f"{start_datetime_str}_{end_datetime_str}"
+    
+    datetime_folder.mkdir(exist_ok=True, parents=True)
 
     return datetime_folder
