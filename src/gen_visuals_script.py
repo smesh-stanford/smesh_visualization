@@ -36,7 +36,7 @@ FULL_DATA_HEADERS = {
         for sensor in SENSOR_NAMES
 }
 
-DATAFOLDERPATH = 'data/'
+DATAFOLDERPATH = 'data/pepperwood-post-burn/'
 LOGGER = "62e4"
 PLOTFOLDERPATH = 'plots/'
 DPI = 300
