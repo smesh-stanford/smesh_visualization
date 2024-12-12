@@ -326,6 +326,7 @@ def plot_sensor_interval_boxplot(data_dict: dict, sensor: str,
                                  max_time = 60 * 60 * 3,
                                  min_time = -60 * 60 * 3, 
                                  lim_bounds: bool = False,
+                                 min_num_readings: int = 10,
                                  violin_version: bool = False) -> tuple:
     """
     Plot the interval between the sensor readings by node
@@ -335,7 +336,7 @@ def plot_sensor_interval_boxplot(data_dict: dict, sensor: str,
 
     # Remove empty nodes
     all_intervals = {node_name: node_intervals for node_name, node_intervals \
-                     in all_intervals.items() if len(node_intervals) > 10}
+                     in all_intervals.items() if len(node_intervals) > min_num_readings}
     
     fig, ax = plt.subplots(figsize=(8, 4))
 

@@ -29,7 +29,7 @@ END_DATETIME = ""
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/henrycoe-pre-burn/"
+PLOTFOLDERPATH = "plots/henrycoe-pre-burn/62e4/"
 DPI = 300
 
 LOG_Y_NAMES = ["pmsa003i"]
