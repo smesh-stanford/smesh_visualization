@@ -5,6 +5,7 @@ import pathlib         # Nicer IO than the os library
 # from tqdm import tqdm  # Progress bar
 
 # Custom imports
+from config_parser import Config
 from data_parsing import read_csv_data_from_logger, \
     trim_datetime_range, make_folder_datetime_range
 from smesh_plots import save_plot_helper, \
@@ -12,152 +13,108 @@ from smesh_plots import save_plot_helper, \
     plot_correlation_matrix, plot_correlation_scatter, \
     plot_datetime_histogram, plot_sensor_interval, \
     plot_sensor_interval_boxplot
-from terminal_utils import with_color
+from terminal_utils import with_color, now_print
 
 ########################################################
-#  Sensor Configuration (should be in a yml file)
+#  Plotting Configuration
 ########################################################
 
-# Global variables since the pepperwood code version does not include headers
-# It would also be possible to put this in a config.yml or similar format.
-BASE_HEADERS = ['datetime', 'from_node']
-NETWORK_HEADERS = ['rxSnr', 'hopLimit', 'rxRssi', 'hopStart']
+# Config file path
+CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config.toml")
 
-SENSOR_HEADERS = {
-    "device_metrics":   ['batteryLevel', 'voltage', 'channelUtilization', 'airUtilTx'],
-    "bme688":           ['temperature', 'relativeHumidity', 'barometricPressure', 'gasResistance', 'iaq'],
-    "ina260":           ['ch3Voltage', 'ch3Current'],
-    "pmsa003i":         ['pm10Standard', 'pm25Standard', 'pm100Standard', 'pm10Environmental', 'pm25Environmental', 'pm100Environmental'],
-}
-SENSOR_NAMES = SENSOR_HEADERS.keys()
-
-FULL_DATA_HEADERS = {
-    sensor: BASE_HEADERS + SENSOR_HEADERS[sensor] + NETWORK_HEADERS \
-        for sensor in SENSOR_NAMES
-}
-
-DATAFOLDERPATH = 'data/pepperwood-post-burn/'
-LOGGER = "62e4"
-PLOTFOLDERPATH = 'plots/'
-DPI = 300
-
-LOG_Y_NAMES = ["pmsa003i"]
-
-INTERVAL_BOUNDS = {
-    "device_metrics":   [60 * 5.5, 60 * 6.5],
-    "bme688":           [50, 70],
-    "ina260":           [60 * 4.5, 60 * 5.5],
-    "pmsa003i":         [50, 70],
-}
-
-START_DATETIME = "2024-11-08 10:00:00"
-END_DATETIME = "2024-11-12 10:00:00"
-
-# START_DATETIME = ""
-# END_DATETIME = ""
-
-########################################################
-# Events Configuration (should be in a yml file)
-########################################################
-
-EVENT_DATETIMES = [
-    # Year, Month, Day, Time
-    datetime.datetime(2024, 11, 9, 10), # Start of the burn
-    datetime.datetime(2024, 11, 11, 6), # Start of the rain
-    datetime.datetime(2024, 11, 12, 4), # WIFI disconnection
-    datetime.datetime(2024, 11, 15, 13), # Last Logger Data
-]
+now_print(f"Loading configuration from {with_color(CONFIG_FILEPATH)}...")
+config = Config.from_toml(CONFIG_FILEPATH)
 
 ########################################################
 # Main (should integrate with tyro)
 ########################################################
 
 # Check that the folder exists
-assert pathlib.Path(DATAFOLDERPATH).is_dir(), \
-    f"Data folder path {DATAFOLDERPATH} does not exist. Check the path. " + \
+assert pathlib.Path(config.data_folder_path).is_dir(), \
+    f"Data folder path {config.data_folder_path} does not exist. Check the path. " + \
     f"Current working directory: {pathlib.Path.cwd()}"
 
-print(f"[{datetime.datetime.now()}] Loading data...")
+now_print(f"Loading data...")
 pepperwood_data_dfs = read_csv_data_from_logger(
-    LOGGER, DATAFOLDERPATH, SENSOR_NAMES, FULL_DATA_HEADERS, 
+    config.logger, config.data_folder_path, config.sensor_names, config.full_data_headers, 
     extension="_modified.csv")
-print(f"[{datetime.datetime.now()}] Data loaded!")
+now_print(f"Data loaded!")
 
 # Trim the datetime range if necessary
-if START_DATETIME and END_DATETIME:
+if config.start_datetime and config.end_datetime:
     # Both strings are not empty
-    print(f"[{datetime.datetime.now()}] Trimming datetime range...")
+    now_print(f"Trimming datetime range...")
     pepperwood_data_dfs = trim_datetime_range(
-        pepperwood_data_dfs, START_DATETIME, END_DATETIME)
-    print(f"[{datetime.datetime.now()}] Datetime range trimmed!")
+        pepperwood_data_dfs, config.start_datetime, config.end_datetime)
+    now_print(f"Datetime range trimmed!")
 
     # Make the folder for the datetime range
     plots_folder = make_folder_datetime_range(
-        pathlib.Path(PLOTFOLDERPATH), START_DATETIME, END_DATETIME)
+        pathlib.Path(config.plot_folder_path), config.start_datetime, config.end_datetime)
 
 else:
     # The strings are empty
-    plots_folder = pathlib.Path(PLOTFOLDERPATH)
+    plots_folder = pathlib.Path(config.plot_folder_path)
 
 
 # Plotting
-for sensor in SENSOR_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)}...")
+for sensor in config.sensor_names:
+    now_print(f"Plotting {with_color(sensor)}...")
     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-                                          sensor_headers=SENSOR_HEADERS,
-                                          event_datetimes=EVENT_DATETIMES)
+                                          sensor_headers=config.sensor_headers,
+                                          event_datetimes=config.event_datetimes)
 
     save_plot_helper(fig, plots_folder, f"{sensor}_all_vars_timeseries.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
-    print(f"[{datetime.datetime.now()}] ... {sensor} plotted!")
+    now_print(f"... {sensor} plotted!")
 
 # Not plot pmsa with logy scale
-for sensor in LOG_Y_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting {with_color(sensor)} with logy scale...")
+for sensor in config.log_y_names:
+    now_print(f"Plotting {with_color(sensor)} with logy scale...")
     fig, axes = plot_all_sensor_variables(pepperwood_data_dfs, sensor=sensor,
-                                          sensor_headers=SENSOR_HEADERS,
-                                          event_datetimes=EVENT_DATETIMES,
+                                          sensor_headers=config.sensor_headers,
+                                          event_datetimes=config.event_datetimes,
                                           logy=True)
 
     save_plot_helper(fig, plots_folder, f"{sensor}_all_vars_timeseries_logy.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
-    print(f"[{datetime.datetime.now()}] ... {sensor} plotted with logy scale!")
+    now_print(f"... {sensor} plotted with logy scale!")
 
 # Plot correlation matrix and scatter
-for sensor in SENSOR_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting correlation for {with_color(sensor)}...")
+for sensor in config.sensor_names:
+    now_print(f"Plotting correlation for {with_color(sensor)}...")
     fig, axes = plot_correlation_matrix(pepperwood_data_dfs, sensor=sensor,
-                                        sensor_headers=SENSOR_HEADERS)
+                                        sensor_headers=config.sensor_headers)
     save_plot_helper(fig, plots_folder, f"{sensor}_correlation_matrix.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
     fig, axes = plot_correlation_scatter(pepperwood_data_dfs, sensor=sensor,
-                                        sensor_headers=SENSOR_HEADERS)
+                                        sensor_headers=config.sensor_headers)
     save_plot_helper(fig, plots_folder, f"{sensor}_correlation_scatter.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
-    print(f"[{datetime.datetime.now()}] ... {sensor} correlation plotted!")
+    now_print(f"... {sensor} correlation plotted!")
 
 # Plot datetime histogram
-for sensor in SENSOR_NAMES:
-    print(f"[{datetime.datetime.now()}] Plotting datetime histogram for {with_color(sensor)}...")
+for sensor in config.sensor_names:
+    now_print(f"Plotting datetime histogram for {with_color(sensor)}...")
     fig, axes = plot_datetime_histogram(pepperwood_data_dfs, sensor=sensor,
-                                        event_datetimes=EVENT_DATETIMES)
+                                        event_datetimes=config.event_datetimes)
     save_plot_helper(fig, plots_folder, f"{sensor}_datetime_histogram.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
     fig, axes = plot_sensor_interval(pepperwood_data_dfs, sensor=sensor,
-                                        event_datetimes=EVENT_DATETIMES)
+                                        event_datetimes=config.event_datetimes)
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
     fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor)
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_boxplot.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
-    min_time, max_time = INTERVAL_BOUNDS[sensor]
+    min_time, max_time = config.interval_bounds[sensor]
     min_time = int(min_time)
     max_time = int(max_time)
     fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor, 
@@ -165,16 +122,16 @@ for sensor in SENSOR_NAMES:
                     lim_bounds=True)
     appendix = f"boxplot_bound_{min_time}-{max_time}s"
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
     fig, axes = plot_sensor_interval_boxplot(pepperwood_data_dfs, sensor=sensor, 
                     max_time=max_time, min_time=min_time,
                     lim_bounds=True, violin_version=True)
     appendix = f"violin_bound_{min_time}-{max_time}s"
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
-                     dpi=DPI)
+                     dpi=config.dpi)
 
-    print(f"[{datetime.datetime.now()}] ... {sensor} datetime histogram plotted!")
+    now_print(f"... {sensor} datetime histogram plotted!")
 
 
-print(f"[{datetime.datetime.now()}] All plots completed!")
+now_print(f"All plots completed!")

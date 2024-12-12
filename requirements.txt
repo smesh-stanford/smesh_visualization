@@ -4,3 +4,4 @@ matplotlib
 tqdm
 pip
 astral
+toml

@@ -1,0 +1,53 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "from_node"]
+NETWORK_HEADERS = ["rxSnr", "hopLimit", "rxRssi", "hopStart"]
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+device_metrics = ["batteryLevel", "voltage", "channelUtilization", "airUtilTx"]
+bme688 = ["temperature", "relativeHumidity", "barometricPressure", 
+          "gasResistance", "iaq"]
+ina260 = ["ch3Voltage", "ch3Current"]
+pmsa003i = ["pm10Standard", "pm25Standard", "pm100Standard", 
+            "pm10Environmental", "pm25Environmental", "pm100Environmental"]
+
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/pepperwood-post-burn/"
+LOGGER = "62e4"
+START_DATETIME = "2024-11-08 10:00:00"
+END_DATETIME = "2024-11-12 10:00:00"
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/"
+DPI = 300
+
+LOG_Y_NAMES = ["pmsa003i"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS]
+device_metrics = [330, 390]
+bme688 = [50, 70]
+ina260 = [270, 330]
+pmsa003i = [50, 70]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2024-11-09 10:00:00", # Start of the burn
+    "2024-11-11 06:00:00", # Start of the rain
+    "2024-11-12 04:00:00", # WIFI disconnection
+    "2024-11-15 13:00:00", # Last Logger Data
+]
