@@ -20,7 +20,8 @@ from terminal_utils import with_color, now_print
 ########################################################
 
 # Config file path
-CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config.toml")
+# CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config.toml")
+CONFIG_FILEPATH = pathlib.Path("data/henrycoe-pre-burn/plotting_config.toml")
 
 now_print(f"Loading configuration from {with_color(CONFIG_FILEPATH)}...")
 config = Config.from_toml(CONFIG_FILEPATH)
@@ -36,8 +37,9 @@ assert pathlib.Path(config.data_folder_path).is_dir(), \
 
 now_print(f"Loading data...")
 pepperwood_data_dfs = read_csv_data_from_logger(
-    config.logger, config.data_folder_path, config.sensor_names, config.full_data_headers, 
-    extension="_modified.csv")
+    config.logger, config.data_folder_path, config.sensor_names, 
+    config.full_data_headers)
+    # extension="_modified.csv")
 now_print(f"Data loaded!")
 
 # Trim the datetime range if necessary
