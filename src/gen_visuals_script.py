@@ -1,5 +1,5 @@
-import datetime
-import matplotlib.pyplot as plt
+# import datetime
+# import matplotlib.pyplot as plt
 
 import pathlib         # Nicer IO than the os library
 # from tqdm import tqdm  # Progress bar
@@ -16,12 +16,14 @@ from smesh_plots import save_plot_helper, \
 from terminal_utils import with_color, now_print
 
 ########################################################
-#  Plotting Configuration
+#  Plotting Configuration (you should only need to change this)
 ########################################################
 
 # Config file path
 # CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config.toml")
-CONFIG_FILEPATH = pathlib.Path("data/henrycoe-pre-burn/plotting_config.toml")
+# CONFIG_FILEPATH = pathlib.Path("data/henrycoe-pre-burn/plotting_config.toml")
+# CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config.toml")
+CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config_4004.toml")
 
 now_print(f"Loading configuration from {with_color(CONFIG_FILEPATH)}...")
 config = Config.from_toml(CONFIG_FILEPATH)

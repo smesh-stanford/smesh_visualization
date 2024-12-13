@@ -1,2 +1,1 @@
-# Ignore the python cache files
-*.pyc
+**/*.pyc

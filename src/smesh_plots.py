@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 
+from terminal_utils import print_issue
+
 # try:
 #     import astral          # For sunrise and sunset times
 #     astral_available = True
@@ -78,6 +80,9 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
 
     fig, axes = plt.subplots(nrows = num_vars, ncols=1,
                              figsize=(12, 3 * num_vars), sharex=True)
+    # even when we only have one row (num_vars = 1), we still need to
+    # access the axes as a list
+    axes = [axes] if num_vars == 1 else axes
 
     curr_data_df = data_dict[sensor]
 
@@ -172,7 +177,12 @@ def plot_correlation_scatter(data_dict: dict, sensor: str,
     fig, axes = plt.subplots(nrows = num_vars, ncols=num_vars,
                              figsize=(2 * num_vars + 1, 2 * num_vars),
                              sharex='col', sharey='row')
-
+    
+    # Even when we only have one row and column (num_vars = 1), we still need to
+    # access the axes as a 2D numpy array
+    axes = np.array([[axes]]) if num_vars == 1 else axes
+    assert axes.shape == (num_vars, num_vars), f"axes shape is {axes.shape}"
+    
     starting_datetime = curr_data_df['datetime'].iloc[0]
     diff_from_start = curr_data_df['datetime'] - starting_datetime
 
@@ -334,11 +344,28 @@ def plot_sensor_interval_boxplot(data_dict: dict, sensor: str,
     cut = max_time if violin_version else 1e9
     all_intervals, _ = get_sensor_interval(data_dict, sensor, cut)
 
+    # Store these in case there is an error later
+    num_keys_originally = len(all_intervals.keys())
+    num_vals_originally = len(all_intervals.values())
+    num_vals_each_originally = [len(node_intervals) for node_intervals in all_intervals.values()]
+
     # Remove empty nodes
     all_intervals = {node_name: node_intervals for node_name, node_intervals \
                      in all_intervals.items() if len(node_intervals) > min_num_readings}
     
+    num_keys_filtered = len(all_intervals.keys())
+    num_vals_filtered = len(all_intervals.values())
+    
     fig, ax = plt.subplots(figsize=(8, 4))
+
+    if num_keys_filtered == 0:
+        assert num_vals_filtered == 0, f"There are no keys but there are {num_vals_filtered} values"
+
+        print_issue(f"No nodes have more than {min_num_readings} readings. " + \
+                    f"Originally there were {num_keys_originally} nodes with {num_vals_originally} values. " + \
+                    f"With {num_vals_each_originally} readings each.")
+
+        return fig, ax
 
     if violin_version:
         # convert to list of arrays for violinplot
@@ -359,6 +386,10 @@ def plot_sensor_interval_boxplot(data_dict: dict, sensor: str,
         ax.set_xticklabels(all_intervals_names)
     else:
         flierprops = dict(marker='_', markeredgecolor='tab:grey')
+        # print("All intervals keys:", all_intervals.keys())
+        # print("All intervals keys length:", len(all_intervals.keys()))
+        # print("All intervals values:", all_intervals.values())
+        # print("All intervals values length:", len(all_intervals.values()))
         ax.boxplot(all_intervals.values(), labels=all_intervals.keys(), flierprops=flierprops)
 
     plt.xticks(rotation=45)
