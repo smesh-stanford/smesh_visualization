@@ -53,6 +53,9 @@ class Config:
     # The event datetimes for the data
     event_datetimes: List[datetime.datetime]
 
+    # Moving average window size
+    moving_average_window_size_min: datetime.timedelta
+
     @classmethod
     def from_toml(cls, path: pathlib.Path, 
                   datetime_format: str = "%Y-%m-%d %H:%M:%S") -> "Config":
@@ -99,6 +102,14 @@ class Config:
             end_datetime = datetime.datetime.strptime(
                 io_config["END_DATETIME"], datetime_format
             )
+
+        if not plot_config["MOVING_AVERAGE_WINDOW_SIZE_MIN"]:
+            moving_average_window_size_min = datetime.timedelta(minutes=10)
+        else:
+            moving_average_window_size_min = datetime.timedelta(
+                minutes=plot_config["MOVING_AVERAGE_WINDOW_SIZE_MIN"]
+            )
+
         
         event_datetimes = [
             datetime.datetime.strptime(event_time, datetime_format)
@@ -120,4 +131,5 @@ class Config:
             start_datetime=start_datetime,
             end_datetime=end_datetime,
             event_datetimes=event_datetimes,
+            moving_average_window_size_min=moving_average_window_size_min
         )

@@ -70,11 +70,13 @@ def add_event_lines(ax, curr_data_df, event_datetimes):
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
                               sensor_headers: dict,
                               event_datetimes: list = None,
-                              logy: bool = False) -> tuple:
+                              logy: bool = False,
+                              alpha: float = 1.0,
+                              col_id: str = 'from_short_name',
+                              use_labels: bool = True) -> tuple:
     """
     Plot each sensor variable by row
     """
-    col_id = 'from_short_name'
     sensor_vars = sensor_headers[sensor]
     num_vars = len(sensor_vars)
 
@@ -88,16 +90,17 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
 
     for node_name, node_data in curr_data_df.groupby(col_id):
         for var_id, sensed_var in enumerate(sensor_vars):
+            label = node_name if use_labels else None
             axes[var_id].scatter(x='datetime', y=sensed_var,
-                           data=node_data, label=node_name, s=1)
-            # axes[var_id].plot(x='datetime', y=sensed_var,
-            #                   data=node_data, label=node_name)
+                           data=node_data, label=label, s=1, alpha=alpha)
 
     for var_id, sensed_var in enumerate(sensor_vars):
         axes[var_id].grid(True)
         axes[var_id].set_ylabel(sensed_var)
-        axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
-                            markerscale=3)
+
+        if use_labels:
+            axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
+                                markerscale=3)
         
         if event_datetimes is not None:
             add_event_lines(axes[var_id], curr_data_df, event_datetimes)
@@ -127,6 +130,37 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
     plt.xlim([minx, maxx])
 
     plt.tight_layout()
+
+    return fig, axes
+
+
+def plot_moving_averages(moving_avg_dict: dict, 
+                         data_dict: dict,
+                         sensor: str, sensor_headers: dict,
+                         window_min: datetime.timedelta,
+                         event_datetimes: list = None,
+                         logy: bool = False) -> tuple:
+    """
+    Plot the moving averages for the sensor variables
+
+    This function uses the plot_all_sensor_variables function as a background.
+    """
+    sensor_vars = sensor_headers[sensor]
+    window_min_str = int(window_min.total_seconds() / 60)
+
+    fig, axes = plot_all_sensor_variables(data_dict, sensor, sensor_headers,
+                                            event_datetimes=event_datetimes,
+                                            logy=logy, alpha=0.5,
+                                            use_labels=False)
+    
+    for node_name, node_data in moving_avg_dict[sensor].items():
+        for var_id, sensed_var in enumerate(sensor_vars):
+            axes[var_id].plot(node_data['datetime'], node_data[sensed_var],
+                              label=f"{node_name} Moving Average [{window_min_str} min]")
+            
+    for var_id, sensed_var in enumerate(sensor_vars):
+        axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
+                                markerscale=3)
 
     return fig, axes
 
