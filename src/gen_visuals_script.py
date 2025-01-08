@@ -22,7 +22,7 @@ from terminal_utils import with_color, now_print
 ########################################################
 
 # Config file path
-# CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config.toml")
+# CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config_2024-12-19.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/henrycoe-pre-burn/plotting_config.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config_4004.toml")
@@ -60,8 +60,10 @@ if config.start_datetime and config.end_datetime:
 # Make the folder for the datetime range
 # This fuction will account for the case where the datetimes are None
 plots_folder = make_folder_datetime_range(
-    pathlib.Path(config.plot_folder_path), 
+    pathlib.Path(config.plot_folder_path) / config.logger, 
     config.start_datetime, config.end_datetime)
+
+now_print(f"Plots will be saved to {with_color(plots_folder)}")
 
 
 # Plotting
@@ -144,22 +146,23 @@ for sensor in config.sensor_names:
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_boxplot.png",
                      dpi=config.dpi)
 
-    min_time, max_time = config.interval_bounds[sensor]
-    min_time = int(min_time)
-    max_time = int(max_time)
-    fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
-                    max_time=max_time, min_time=min_time,
-                    lim_bounds=True)
-    appendix = f"boxplot_bound_{min_time}-{max_time}s"
-    save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
-                     dpi=config.dpi)
+    if sensor in config.interval_bounds:
+        min_time, max_time = config.interval_bounds[sensor]
+        min_time = int(min_time)
+        max_time = int(max_time)
+        fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
+                        max_time=max_time, min_time=min_time,
+                        lim_bounds=True)
+        appendix = f"boxplot_bound_{min_time}-{max_time}s"
+        save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
+                        dpi=config.dpi)
 
-    fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
-                    max_time=max_time, min_time=min_time,
-                    lim_bounds=True, violin_version=True)
-    appendix = f"violin_bound_{min_time}-{max_time}s"
-    save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
-                     dpi=config.dpi)
+        fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
+                        max_time=max_time, min_time=min_time,
+                        lim_bounds=True, violin_version=True)
+        appendix = f"violin_bound_{min_time}-{max_time}s"
+        save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
+                        dpi=config.dpi)
 
     now_print(f"... {sensor} datetime histogram plotted!")
 

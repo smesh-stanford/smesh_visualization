@@ -88,7 +88,7 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
             if sensor == "radio":
                 continue
 
-            # Get the copy of the radio data from the sensor
+            # Get a copy of the radio data from the sensor
             sensor_radio_df = data_dfs[sensor][radio_headers].copy()
 
             # Add the sensor name to the radio data
@@ -99,8 +99,6 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
             assert all(sensor_radio_df.columns == radio_df_headers), \
                 f"The columns of the radio dataframe are not as expected. " + \
                 f"Expected: {radio_df_headers}. Got: {sensor_radio_df.columns}"
-            
-            print("shape of sensor_radio_df: ", sensor_radio_df.shape)
 
             # Add the radio data to the radio dataframe
             if radio_df is None:
@@ -116,6 +114,7 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
                     f"Got: {len(radio_df)}"
 
         # Sort the radio dataframe by datetime
+        # We ignore the index since we want the sort to be permanent
         radio_df.sort_values(by="datetime", inplace=True, ignore_index=True)
 
         # Add the short names
@@ -123,12 +122,6 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
 
         # Add the radio dataframe to the data_dfs dictionary
         data_dfs["radio"] = radio_df
-
-    # for sensor, df in data_dfs.items():
-    #     now_print(f"Data for {sensor} has {df.shape[0]} rows and {df.shape[1]} columns.")
-    #     print(df.head())
-    #     print("...")
-    #     print(df.tail())
 
     return data_dfs
 
@@ -148,12 +141,6 @@ def trim_datetime_range(data_dfs: dict,
         trimmed_data_dfs: dict - A dictionary of pandas dataframes
     """
     trimmed_data_dfs = {}
-
-    # Convert the strings to datetime objects
-    # start_datetime = datetime.datetime.strptime(
-    #     start_datetime_str, "%Y-%m-%d %H:%M:%S")
-    # end_datetime = datetime.datetime.strptime(
-    #     end_datetime_str, "%Y-%m-%d %H:%M:%S")
 
     assert isinstance(start_datetime, datetime.datetime), \
         f"start_datetime is not a datetime.datetime object. It is a {type(start_datetime)}"
