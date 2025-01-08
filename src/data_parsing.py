@@ -3,7 +3,7 @@ import pathlib         # Nicer IO than the os library
 import pandas as pd
 
 # Custom imports
-from terminal_utils import with_color, now_print
+from terminal_utils import with_color, now_print, print_issue
 
 
 def get_short_name(df: pd.DataFrame):
@@ -112,6 +112,15 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
                     " after concatenating the new sensor data. \n" + \
                     f"Expected: {radio_df_len + sensor_radio_len} \n" + \
                     f"Got: {len(radio_df)}"
+                
+                radio_df_len = len(radio_df)
+
+        # Remove rows where the datetime is NaT
+        radio_df = radio_df.dropna(subset=["datetime"])
+
+        if len(radio_df) != radio_df_len:
+            print_issue(f"Removed {radio_df_len - len(radio_df)} rows with " + \
+                      "NaT datetime that could not be sorted in the radio data.")
 
         # Sort the radio dataframe by datetime
         # We ignore the index since we want the sort to be permanent

@@ -20,7 +20,7 @@ pmsa003i = ["pm10Standard", "pm25Standard", "pm100Standard",
 
 [IO_CONFIG]
 DATAFOLDERPATH = "data/henrycoe-post-burn/"
-LOGGER = "0b38"
+LOGGER = "62e4" # Options are "0b38" or "62e4"
 START_DATETIME = ""
 END_DATETIME = ""
 
@@ -29,8 +29,10 @@ END_DATETIME = ""
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/henrycoe-post-burn/0b38/"
+PLOTFOLDERPATH = "plots/henrycoe-post-burn/"
 DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
 
 LOG_Y_NAMES = ["pmsa003i"]
 

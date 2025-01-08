@@ -29,7 +29,7 @@ END_DATETIME = ""
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/burnbot-post-burn/4004/"
+PLOTFOLDERPATH = "plots/burnbot-post-burn/"
 DPI = 300
 
 MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
