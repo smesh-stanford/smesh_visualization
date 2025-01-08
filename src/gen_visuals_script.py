@@ -66,8 +66,7 @@ now_print(f"Plots will be saved to {with_color(plots_folder)}")
 for sensor in config.sensor_names:
     now_print(f"Plotting {with_color(sensor)}...")
     fig, axes = plot_all_sensor_variables(smesh_data_dfs, sensor=sensor,
-                                          sensor_headers=config.sensor_headers,
-                                          event_datetimes=config.event_datetimes)
+                                          config=config)
 
     save_plot_helper(fig, plots_folder, f"{sensor}_all_vars_timeseries.png",
                      dpi=config.dpi)
@@ -78,9 +77,7 @@ for sensor in config.sensor_names:
 for sensor in config.log_y_names:
     now_print(f"Plotting {with_color(sensor)} with logy scale...")
     fig, axes = plot_all_sensor_variables(smesh_data_dfs, sensor=sensor,
-                                          sensor_headers=config.sensor_headers,
-                                          event_datetimes=config.event_datetimes,
-                                          logy=True)
+                                          config=config, logy=True)
 
     save_plot_helper(fig, plots_folder, f"{sensor}_all_vars_timeseries_logy.png",
                      dpi=config.dpi)
@@ -92,8 +89,7 @@ moving_avg_dict = {}
 for sensor in config.sensor_names:
     now_print(f"Calculating moving average for {with_color(sensor)}...")
     moving_avg_dict[sensor] = calculate_sensor_moving_averages(
-        smesh_data_dfs, sensor=sensor, sensor_headers=config.sensor_headers,
-        window_size=config.moving_average_window_size_min
+        smesh_data_dfs, sensor=sensor, config=config
     )
     now_print(f"... {sensor} moving average calculated!")
 
@@ -101,9 +97,7 @@ for sensor in config.sensor_names:
     now_print(f"Plotting moving average for {with_color(sensor)}...")
     fig, axes = plot_moving_averages(moving_avg_dict,
                                      smesh_data_dfs, sensor=sensor,
-                                     sensor_headers=config.sensor_headers,
-                                     window_min=config.moving_average_window_size_min,
-                                     event_datetimes=config.event_datetimes)
+                                     config=config)
 
     save_plot_helper(fig, plots_folder, f"{sensor}_all_vars_timeseries_moving_avg.png",
                      dpi=config.dpi)
@@ -114,12 +108,12 @@ for sensor in config.sensor_names:
 for sensor in config.sensor_names:
     now_print(f"Plotting correlation for {with_color(sensor)}...")
     fig, axes = plot_correlation_matrix(smesh_data_dfs, sensor=sensor,
-                                        sensor_headers=config.sensor_headers)
+                                        config=config)
     save_plot_helper(fig, plots_folder, f"{sensor}_correlation_matrix.png",
                      dpi=config.dpi)
 
     fig, axes = plot_correlation_scatter(smesh_data_dfs, sensor=sensor,
-                                        sensor_headers=config.sensor_headers)
+                                         config=config)
     save_plot_helper(fig, plots_folder, f"{sensor}_correlation_scatter.png",
                      dpi=config.dpi)
 
@@ -129,16 +123,17 @@ for sensor in config.sensor_names:
 for sensor in config.sensor_names:
     now_print(f"Plotting datetime histogram for {with_color(sensor)}...")
     fig, axes = plot_datetime_histogram(smesh_data_dfs, sensor=sensor,
-                                        event_datetimes=config.event_datetimes)
+                                        config=config)
     save_plot_helper(fig, plots_folder, f"{sensor}_datetime_histogram.png",
                      dpi=config.dpi)
 
     fig, axes = plot_sensor_interval(smesh_data_dfs, sensor=sensor,
-                                        event_datetimes=config.event_datetimes)
+                                     config=config)
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval.png",
                      dpi=config.dpi)
 
-    fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor)
+    fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor,
+                                             config=config)
     save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_boxplot.png",
                      dpi=config.dpi)
 
@@ -147,15 +142,14 @@ for sensor in config.sensor_names:
         min_time = int(min_time)
         max_time = int(max_time)
         fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
-                        max_time=max_time, min_time=min_time,
-                        lim_bounds=True)
+                        config=config, force_lim_bounds=True)
         appendix = f"boxplot_bound_{min_time}-{max_time}s"
         save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
                         dpi=config.dpi)
 
         fig, axes = plot_sensor_interval_boxplot(smesh_data_dfs, sensor=sensor, 
-                        max_time=max_time, min_time=min_time,
-                        lim_bounds=True, violin_version=True)
+                        config=config, force_lim_bounds=True, 
+                        violin_version=True)
         appendix = f"violin_bound_{min_time}-{max_time}s"
         save_plot_helper(fig, plots_folder, f"{sensor}_sensor_interval_{appendix}.png",
                         dpi=config.dpi)
