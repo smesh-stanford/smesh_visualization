@@ -5,6 +5,24 @@ import pandas as pd
 # Custom imports
 from terminal_utils import with_color, now_print
 
+
+def get_short_name(df: pd.DataFrame):
+    """
+    Get the short name from the dataframe.
+
+    Inputs:
+        df: pd.DataFrame - The dataframe
+
+    Outputs:
+        short_name: str - The short name of the node
+    """
+    assert 'from_node' in df.columns, \
+        "The dataframe does not have a 'from_node' column, so we cannot " + \
+        "determine the short name."
+
+    return df['from_node'].str[-4:]
+
+
 def read_csv_data_from_logger(logger: str, folderpath: str, 
                               sensor_list: list,
                               data_headers: dict,
@@ -27,6 +45,11 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
     data_dfs = {}
 
     for sensor in sensor_list:
+
+        if sensor == "radio":
+            # skip for now (handle at end when the rest of the data is loaded)
+            continue
+
         now_print(f"Trying to open data for " + with_color(sensor) + "...")
         data_path = pathlib.Path(folderpath + logger + "_" + sensor + extension)
         if not data_path.exists():
@@ -42,9 +65,70 @@ def read_csv_data_from_logger(logger: str, folderpath: str,
         # Since we do not have the headers, we need to add them
         data_dfs[sensor].columns = data_headers[sensor]
         # Include the short name out of convenience
-        data_dfs[sensor]['from_short_name'] = data_dfs[sensor]['from_node'].str[-4:]
+        data_dfs[sensor]['from_short_name'] = get_short_name(data_dfs[sensor])
 
         now_print("... Sensor completed!")
+    
+    if "radio" in sensor_list:
+        # Now that the data is loaded, we can load the radio data from the
+        # pandas dataframes of the other sensors (i.e., the network headers
+        # that are common to all sensors)
+        now_print(f"Reformatting data for " + with_color("radio") + "...")
+
+        # Get the radio headers with an additional column for the sensor from
+        # which the radio data is coming
+        radio_headers = data_headers["radio"]
+        radio_df_headers = data_headers["radio"] + ["from_sensor"]
+
+        # Create a new dataframe for the radio data
+        radio_df = None
+
+        # Add the radio data from the other sensors
+        for sensor in sensor_list:
+            if sensor == "radio":
+                continue
+
+            # Get the copy of the radio data from the sensor
+            sensor_radio_df = data_dfs[sensor][radio_headers].copy()
+
+            # Add the sensor name to the radio data
+            sensor_radio_df["from_sensor"] = sensor
+
+            sensor_radio_len = len(sensor_radio_df)
+
+            assert all(sensor_radio_df.columns == radio_df_headers), \
+                f"The columns of the radio dataframe are not as expected. " + \
+                f"Expected: {radio_df_headers}. Got: {sensor_radio_df.columns}"
+            
+            print("shape of sensor_radio_df: ", sensor_radio_df.shape)
+
+            # Add the radio data to the radio dataframe
+            if radio_df is None:
+                radio_df = sensor_radio_df
+            else:
+                radio_df_len = len(radio_df)
+                radio_df = pd.concat([radio_df, sensor_radio_df])
+
+                assert len(radio_df) == radio_df_len + sensor_radio_len, \
+                    f"The length of the radio dataframe is not as expected " + \
+                    " after concatenating the new sensor data. \n" + \
+                    f"Expected: {radio_df_len + sensor_radio_len} \n" + \
+                    f"Got: {len(radio_df)}"
+
+        # Sort the radio dataframe by datetime
+        radio_df.sort_values(by="datetime", inplace=True, ignore_index=True)
+
+        # Add the short names
+        radio_df['from_short_name'] = get_short_name(radio_df)
+
+        # Add the radio dataframe to the data_dfs dictionary
+        data_dfs["radio"] = radio_df
+
+    # for sensor, df in data_dfs.items():
+    #     now_print(f"Data for {sensor} has {df.shape[0]} rows and {df.shape[1]} columns.")
+    #     print(df.head())
+    #     print("...")
+    #     print(df.tail())
 
     return data_dfs
 

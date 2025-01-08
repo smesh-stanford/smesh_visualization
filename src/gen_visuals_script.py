@@ -27,6 +27,7 @@ from terminal_utils import with_color, now_print
 # CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/henrycoe-post-burn/plotting_config_4004.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/burnbot-post-burn/plotting_config_4004.toml")
+
 CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config_2024-12-19.toml")
 
 now_print(f"Loading configuration from {with_color(CONFIG_FILEPATH)}...")

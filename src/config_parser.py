@@ -87,6 +87,14 @@ class Config:
                 for sensor in sensor_names
         }
 
+        # If the network headers are not empty, we want to add the "radio"
+        # as a sensor. Note that there is radio data for each sensor.
+        if sensor_config["NETWORK_HEADERS"]:
+            sensor_config["SENSOR_HEADERS"]["radio"] = sensor_config["NETWORK_HEADERS"]
+            sensor_names = sensor_config["SENSOR_HEADERS"].keys()
+            full_data_headers["radio"] = sensor_config["BASE_HEADERS"] + \
+                                         sensor_config["NETWORK_HEADERS"]
+
         # Note that we _need_ to account for the case where the strings are empty
         # since we cannot strptime an empty string
         if not io_config["START_DATETIME"]:
