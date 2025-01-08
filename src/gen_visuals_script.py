@@ -29,7 +29,7 @@ from terminal_utils import with_color, now_print
 # CONFIG_FILEPATH = pathlib.Path("data/burnbot-pre-burn/plotting_config_4004.toml")
 # CONFIG_FILEPATH = pathlib.Path("data/burnbot-post-burn/plotting_config_4004.toml")
 
-CONFIG_FILEPATH = pathlib.Path("data/burnbot-pre-burn/plotting_config_4004.toml")
+CONFIG_FILEPATH = pathlib.Path("data/pepperwood-post-burn/plotting_config_2024-12-19.toml")
 
 now_print(f"Loading configuration from {with_color(CONFIG_FILEPATH)}...")
 config = Config.from_toml(CONFIG_FILEPATH)
@@ -44,9 +44,7 @@ assert pathlib.Path(config.data_folder_path).is_dir(), \
     f"Current working directory: {pathlib.Path.cwd()}"
 
 now_print(f"Loading data...")
-smesh_data_dfs = read_csv_data_from_logger(
-    config.logger, config.data_folder_path, config.sensor_names, 
-    config.full_data_headers)
+smesh_data_dfs = read_csv_data_from_logger(config)
     # extension="_modified.csv")
 now_print(f"Data loaded!")
 
@@ -54,15 +52,12 @@ now_print(f"Data loaded!")
 if config.start_datetime and config.end_datetime:
     # Both strings are not empty
     now_print(f"Trimming datetime range...")
-    smesh_data_dfs = trim_datetime_range(
-        smesh_data_dfs, config.start_datetime, config.end_datetime)
+    smesh_data_dfs = trim_datetime_range(smesh_data_dfs, config)
     now_print(f"Datetime range trimmed!")
 
 # Make the folder for the datetime range
 # This fuction will account for the case where the datetimes are None
-plots_folder = make_folder_datetime_range(
-    pathlib.Path(config.plot_folder_path) / config.logger, 
-    config.start_datetime, config.end_datetime)
+plots_folder = make_folder_datetime_range(config)
 
 now_print(f"Plots will be saved to {with_color(plots_folder)}")
 

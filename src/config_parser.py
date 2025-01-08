@@ -25,6 +25,7 @@ class Config:
     full_data_headers: Dict[str, List[str]]
 
     # The path to the data folder
+    # In colab, it likely starts with '/content/drive/Shareddrives/'
     data_folder_path: str
 
     # The meshtastic logger id (only last 4 characters needed)
