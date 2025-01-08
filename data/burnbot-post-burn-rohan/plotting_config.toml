@@ -48,7 +48,8 @@ pmsa003i = [50, 140]
 
 [EVENTS_CONFIG]
 EVENT_DATETIMES = [
-    "2024-12-10 10:00:00", # Presumed start of the ponderosa loop burn
-    "2024-12-11 12:00:00", # Presumed start of the monument trail burn
-    "2024-12-12 02:00:00", # Presumed start of the rain
+    "2024-12-18 13:10:00", # Rough arrival at dish
+    "2024-12-18 17:40:00", # Switch c2b0 with 0098
+    "2024-12-19 11:15:00", # Start of burn bot
+    "2024-12-19 14:30:00", # Burn bot passes radio club
 ]
