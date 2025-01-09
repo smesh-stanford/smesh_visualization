@@ -181,8 +181,11 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/henrycoe-post-burn/plotting_config_4004.toml")
     # config_filepath = pathlib.Path("data/burnbot-pre-burn/plotting_config_4004.toml")
     # config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_4004.toml")
+    # config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_ca0c.toml")
+    # config_filepath = pathlib.Path("data/winter-break/plotting_config_ca0c.toml")
+    # config_filepath = pathlib.Path("data/early-winter-break/plotting_config_ca0c.toml")
 
-    config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_ca0c.toml")
+    config_filepath = pathlib.Path("data/early-winter-break/plotting_config_f864.toml")
 
     ######################################################################
 

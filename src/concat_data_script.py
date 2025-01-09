@@ -12,8 +12,13 @@ from concat_data_utils import concat_logger_data
 
 if __name__ == "__main__":
     # Concatenate the data for each logger
+    # concat_logger_data(
+    #     "ca0c",
+    #     "data/burnbot-post-burn-rohan/",
+    #     "data/burnbot-post-burn/"
+    # )
     concat_logger_data(
-        "ca0c",
-        "data/burnbot-post-burn-rohan/",
-        "data/burnbot-post-burn/"
+        "f864",
+        "data/pete-archive/",
+        "data/early-winter-break/"
     )
