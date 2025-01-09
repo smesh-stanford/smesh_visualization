@@ -4,10 +4,14 @@ import pathlib
 import datetime
 
 import toml
+import pandas as pd
 
 
 @dataclasses.dataclass
 class Config:
+    # The CSV file has headers in the newer versions
+    csv_has_headers: bool
+
     # Base Headers include the datetime and the node that the data is from
     # and is common to all sensor data
     base_headers: List[str]
@@ -88,6 +92,15 @@ class Config:
                 for sensor in sensor_names
         }
 
+        # BACKWARD COMPATIBILITY
+        # In previous versions, the sensor configuration was specified in the
+        # config file. Now, it is specified in the CSV file itself.
+        csv_has_headers = False
+        for sensor in sensor_names:
+            if not sensor_config["SENSOR_HEADERS"][sensor]:
+                csv_has_headers = True
+                break
+
         # If the network headers are not empty, we want to add the "radio"
         # as a sensor. Note that there is radio data for each sensor.
         if sensor_config["NETWORK_HEADERS"]:
@@ -126,6 +139,7 @@ class Config:
         ]
 
         return cls(
+            csv_has_headers=csv_has_headers,
             base_headers=sensor_config["BASE_HEADERS"],
             network_headers=sensor_config["NETWORK_HEADERS"],
             sensor_headers=sensor_config["SENSOR_HEADERS"],
@@ -142,3 +156,62 @@ class Config:
             event_datetimes=event_datetimes,
             moving_average_window_size_min=moving_average_window_size_min
         )
+    
+
+    def update_headers(self, data_dfs: Dict[str, pd.DataFrame]):
+        """
+        Update the headers of the config with the headers from the dataframes.
+        When the CSV file has headers, the headers will not be set in the
+        config file, but we will need to update the headers in the config
+        class instance.
+
+        Inputs:
+            data_dfs: Dict[str, pd.DataFrame] - The dataframes
+        """
+        for sensor in self.sensor_names:
+            self.full_data_headers[sensor] = list(data_dfs[sensor].columns)
+
+        # We need to separate the base, sensor, and network headers.
+
+        len_base_headers = len(self.base_headers)
+
+        for sensor in self.sensor_names:
+            assert self.base_headers == self.full_data_headers[sensor][0:len_base_headers], \
+                "The base headers are not the same among all sensors!\n" + \
+                f"Base headers: {self.base_headers}\n" + \
+                f"{sensor} headers: {self.full_data_headers[sensor]}"
+            
+
+        # The network headers are shared among all sensors and are at the end
+        # of the headers. We can get the network headers with set intersection.
+        network_headers = None
+        for sensor in self.sensor_names:
+            if network_headers is None:
+                network_headers = set(
+                    self.full_data_headers[sensor][len_base_headers:]
+                )
+            else:
+                network_headers = network_headers.intersection(
+                    set(self.full_data_headers[sensor][len_base_headers:])
+                )
+        
+        self.network_headers = sorted(list(network_headers))
+
+        # remove the short name, if it exists
+        if "from_short_name" in self.network_headers:
+            self.network_headers.remove("from_short_name")
+
+        if len(self.network_headers) > 0:
+            # We have radio data
+            self.sensor_headers["radio"] = self.network_headers
+            self.sensor_names = self.sensor_headers.keys()
+            self.full_data_headers["radio"] = self.base_headers + self.network_headers
+        
+        # The remaining headers are the sensor headers and are between the
+        # base and network headers.
+        len_network_headers = len(self.network_headers)
+        for sensor in self.sensor_names:
+            if sensor != "radio":
+                self.sensor_headers[sensor] = self.full_data_headers[sensor][
+                        len_base_headers:-(len_network_headers + 1)
+                    ]

@@ -17,11 +17,17 @@ def get_short_name(df: pd.DataFrame):
     Outputs:
         short_name: str - The short name of the node
     """
-    assert 'from_node' in df.columns, \
-        "The dataframe does not have a 'from_node' column, so we cannot " + \
-        "determine the short name."
+    snake_from_node = 'from_node' in df.columns
+    camel_from_node = 'fromNode' in df.columns
 
-    return df['from_node'].str[-4:]
+    # We need to check that one of the columns exists
+    assert snake_from_node or camel_from_node, \
+        "The dataframe does not have a 'from_node' or 'fromNode' column, " + \
+        "so we cannot determine the short name."
+    
+    from_node_col = 'from_node' if snake_from_node else 'fromNode'
+
+    return df[from_node_col].str[-4:]
 
 
 def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
@@ -57,81 +63,101 @@ def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
             continue
 
         # The "header=None" means that the file does NOT have headers
+        # The "infer" means that the headers will be inferred from the first row
+        # of the csv file.
+        csv_header_processing = "infer" if config.csv_has_headers else None
+
         # The "parse_dates=[0]" means that the zeroth column includes datetime
         # objects.
-        data_dfs[sensor] = pd.read_csv(data_path, header=None, parse_dates=[0])
+        data_dfs[sensor] = pd.read_csv(data_path, 
+            header=csv_header_processing, parse_dates=[0])
 
-        # Since we do not have the headers, we need to add them
-        data_dfs[sensor].columns = config.full_data_headers[sensor]
+        if not config.csv_has_headers:
+            # If we do not have the headers, we need to add them
+            data_dfs[sensor].columns = config.full_data_headers[sensor]
+        
         # Include the short name out of convenience
         data_dfs[sensor]['from_short_name'] = get_short_name(data_dfs[sensor])
 
         now_print("... Sensor completed!")
-    
-    if "radio" in config.sensor_names:
-        # Now that the data is loaded, we can load the radio data from the
-        # pandas dataframes of the other sensors (i.e., the network headers
-        # that are common to all sensors)
-        now_print(f"Reformatting data for " + with_color("radio") + "...")
-
-        # Get the radio headers with an additional column for the sensor from
-        # which the radio data is coming
-        radio_headers = config.full_data_headers["radio"]
-        radio_df_headers = config.full_data_headers["radio"] + ["from_sensor"]
-
-        # Create a new dataframe for the radio data
-        radio_df = None
-
-        # Add the radio data from the other sensors
-        for sensor in config.sensor_names:
-            if sensor == "radio":
-                continue
-
-            # Get a copy of the radio data from the sensor
-            sensor_radio_df = data_dfs[sensor][radio_headers].copy()
-
-            # Add the sensor name to the radio data
-            sensor_radio_df["from_sensor"] = sensor
-
-            sensor_radio_len = len(sensor_radio_df)
-
-            assert all(sensor_radio_df.columns == radio_df_headers), \
-                f"The columns of the radio dataframe are not as expected. " + \
-                f"Expected: {radio_df_headers}. Got: {sensor_radio_df.columns}"
-
-            # Add the radio data to the radio dataframe
-            if radio_df is None:
-                radio_df = sensor_radio_df
-            else:
-                radio_df_len = len(radio_df)
-                radio_df = pd.concat([radio_df, sensor_radio_df])
-
-                assert len(radio_df) == radio_df_len + sensor_radio_len, \
-                    f"The length of the radio dataframe is not as expected " + \
-                    " after concatenating the new sensor data. \n" + \
-                    f"Expected: {radio_df_len + sensor_radio_len} \n" + \
-                    f"Got: {len(radio_df)}"
-                
-                radio_df_len = len(radio_df)
-
-        # Remove rows where the datetime is NaT
-        radio_df = radio_df.dropna(subset=["datetime"])
-
-        if len(radio_df) != radio_df_len:
-            print_issue(f"Removed {radio_df_len - len(radio_df)} rows with " + \
-                      "NaT datetime that could not be sorted in the radio data.")
-
-        # Sort the radio dataframe by datetime
-        # We ignore the index since we want the sort to be permanent
-        radio_df.sort_values(by="datetime", inplace=True, ignore_index=True)
-
-        # Add the short names
-        radio_df['from_short_name'] = get_short_name(radio_df)
-
-        # Add the radio dataframe to the data_dfs dictionary
-        data_dfs["radio"] = radio_df
-
+        
     return data_dfs
+
+
+def read_radio_data_from_sensor_data(data_dfs: dict, 
+                                     config: Config) -> None:
+    """
+    Read the radio data from the sensor data and add it to the data_dfs
+    dictionary.
+
+    Inputs:
+        data_dfs: dict - A dictionary of pandas dataframes
+        config: Config - A Config object
+    """
+    assert isinstance(config, Config), \
+        f"config is not a Config object. It is a {type(config)}"
+    
+    # Now that the data is loaded, we can load the radio data from the
+    # pandas dataframes of the other sensors (i.e., the network headers
+    # that are common to all sensors)
+    now_print(f"Reformatting data for " + with_color("radio") + "...")
+
+    # Get the radio headers with an additional column for the sensor from
+    # which the radio data is coming
+    radio_headers = config.full_data_headers["radio"]
+    radio_df_headers = config.full_data_headers["radio"] + ["from_sensor"]
+
+    # Create a new dataframe for the radio data
+    radio_df = None
+
+    # Add the radio data from the other sensors
+    for sensor in config.sensor_names:
+        if sensor == "radio":
+            continue
+
+        # Get a copy of the radio data from the sensor
+        sensor_radio_df = data_dfs[sensor][radio_headers].copy()
+
+        # Add the sensor name to the radio data
+        sensor_radio_df["from_sensor"] = sensor
+
+        sensor_radio_len = len(sensor_radio_df)
+
+        assert all(sensor_radio_df.columns == radio_df_headers), \
+            f"The columns of the radio dataframe are not as expected. " + \
+            f"Expected: {radio_df_headers}. Got: {sensor_radio_df.columns}"
+
+        # Add the radio data to the radio dataframe
+        if radio_df is None:
+            radio_df = sensor_radio_df
+        else:
+            radio_df_len = len(radio_df)
+            radio_df = pd.concat([radio_df, sensor_radio_df])
+
+            assert len(radio_df) == radio_df_len + sensor_radio_len, \
+                f"The length of the radio dataframe is not as expected " + \
+                " after concatenating the new sensor data. \n" + \
+                f"Expected: {radio_df_len + sensor_radio_len} \n" + \
+                f"Got: {len(radio_df)}"
+            
+            radio_df_len = len(radio_df)
+
+    # Remove rows where the datetime is NaT
+    radio_df = radio_df.dropna(subset=["datetime"])
+
+    if len(radio_df) != radio_df_len:
+        print_issue(f"Removed {radio_df_len - len(radio_df)} rows with " + \
+                    "NaT datetime that could not be sorted in the radio data.")
+
+    # Sort the radio dataframe by datetime
+    # We ignore the index since we want the sort to be permanent
+    radio_df.sort_values(by="datetime", inplace=True, ignore_index=True)
+
+    # Add the short names
+    radio_df['from_short_name'] = get_short_name(radio_df)
+
+    # Add the radio dataframe to the data_dfs dictionary
+    data_dfs["radio"] = radio_df
 
 
 def trim_datetime_range(data_dfs: dict, 

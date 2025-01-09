@@ -14,6 +14,7 @@ import sys             # For system arguments
 # Custom imports
 from config_parser import Config
 from data_parsing import read_csv_data_from_logger, \
+    read_radio_data_from_sensor_data, \
     trim_datetime_range, make_folder_datetime_range
 from moving_average import calculate_sensor_moving_averages
 from smesh_plots import save_plot_helper, \
@@ -43,14 +44,25 @@ def main(config_filepath):
     now_print(f"Loading data...")
     smesh_data_dfs = read_csv_data_from_logger(config)
         # extension="_modified.csv")
-    now_print(f"Data loaded!")
+    now_print(f"... Data loaded!")
+
+    if config.csv_has_headers:
+        # Update the config with the header information from the sensor 
+        # dataframes if they were in the CSV files rather than the config file
+        now_print(f"Updating headers in the configuration...")
+        config.update_headers(smesh_data_dfs)
+        now_print(f"... Headers updated!")
+
+        now_print(f"Reformatting radio data...")
+        read_radio_data_from_sensor_data(smesh_data_dfs, config)
+        now_print(f"... Radio data reformatted!")
 
     # Trim the datetime range if necessary
     if config.start_datetime and config.end_datetime:
         # Both strings are not empty
         now_print(f"Trimming datetime range...")
         smesh_data_dfs = trim_datetime_range(smesh_data_dfs, config)
-        now_print(f"Datetime range trimmed!")
+        now_print(f"... Datetime range trimmed!")
 
     # Make the folder for the datetime range
     # This fuction will account for the case where the datetimes are None
@@ -170,7 +182,7 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/burnbot-pre-burn/plotting_config_4004.toml")
     # config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_4004.toml")
 
-    config_filepath = pathlib.Path("data/pepperwood-post-burn/plotting_config_2024-12-19.toml")
+    config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_ca0c.toml")
 
     ######################################################################
 
