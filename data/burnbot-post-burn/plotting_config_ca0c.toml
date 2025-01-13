@@ -1,0 +1,53 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/burnbot-post-burn/"
+LOGGER = "ca0c"
+START_DATETIME = ""
+END_DATETIME = ""
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/burnbot-post-burn/"
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS]
+device_metrics = [330, 630]
+bme688 = [50, 200]
+ina260 = [270, 630]
+pmsa003i = [50, 140]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2024-12-18 13:10:00", # Rough arrival at dish
+    "2024-12-18 17:40:00", # Switch c2b0 with 0098
+    "2024-12-19 11:15:00", # Start of burn bot
+    "2024-12-19 14:30:00", # Burn bot passes radio club
+]
