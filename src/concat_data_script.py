@@ -18,7 +18,7 @@ if __name__ == "__main__":
     #     "data/burnbot-post-burn/"
     # )
     concat_logger_data(
-        "f864",
-        "data/pete-archive/",
-        "data/early-winter-break/"
+        logger_name="62e4",
+        data_dir="data/burnbot-post-burn-62e4/",
+        output_dir="data/burnbot-post-burn/"
     )
