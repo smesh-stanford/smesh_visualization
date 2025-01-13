@@ -157,6 +157,29 @@ class Config:
             moving_average_window_size_min=moving_average_window_size_min
         )
     
+    @classmethod
+    def from_default(cls) -> "Config":
+        """
+        Generate a default Config object that has most parameters set to None.
+        """
+        return cls(
+            csv_has_headers=True,
+            base_headers=[],
+            network_headers=[],
+            sensor_headers={},
+            sensor_names=[],
+            full_data_headers={},
+            data_folder_path="data/",
+            logger="",
+            plot_folder_path="plots/",
+            dpi=300,
+            log_y_names=[],
+            interval_bounds={},
+            start_datetime=None,
+            end_datetime=None,
+            event_datetimes=[],
+            moving_average_window_size_min=datetime.timedelta(minutes=10)
+        )
 
     def update_headers(self, data_dfs: Dict[str, pd.DataFrame]):
         """
