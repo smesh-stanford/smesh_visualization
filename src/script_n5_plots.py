@@ -4,13 +4,17 @@ SNode data.
 """
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import pathlib 
+import datetime
 
 # Custom imports
+from terminal_utils import now_print, with_color
 from config_parser import Config
 from data_parsing import make_folder_datetime_range
-from smesh_plots import save_plot_helper
+from smesh_plots import save_plot_helper, \
+                        plot_all_sensor_variables, \
+                        plot_moving_averages
+from moving_average import calculate_sensor_moving_averages
 
 
 def read_n5_data(n5_file: str) -> pd.DataFrame:
@@ -32,42 +36,52 @@ def read_n5_data(n5_file: str) -> pd.DataFrame:
     return df_n5
 
 
-def plot_all_n5_variables(df_n5: pd.DataFrame):
-    """
-    Plot all the variables in the N5 data.
-
-    Args:
-    df_n5 (pd.DataFrame): The N5 data.
-    """
-    # We do not need to plot the datetime or stationID separately
-    num_vars = len(df_n5.columns) - 2
-
-    fig, axes = plt.subplots(nrows=num_vars, ncols=1, 
-                             figsize=(12, 3 * num_vars), sharex=True)
-    # handle single axes case
-    axes = [axes] if num_vars == 1 else axes
-
-    sensor_vars = df_n5.columns[2:]
-
-    for ax_ind, sensor_var_name in enumerate(sensor_vars):
-        axes[ax_ind].scatter(x='datetime', y=sensor_var_name, data=df_n5,
-                             label='stationID', s=1)
-        axes[ax_ind].grid(True)
-        axes[ax_ind].set_ylabel(sensor_var_name)
-
-    return fig, axes
-
-
 if __name__ == "__main__":
     # Read the N5 data
-    n5_file = pathlib.Path("external-data/burnbot-post-burn/N5-raw-data-aa-87-13-85_2025-01-07 17_31_26.csv")
+    now_print(f"Loading N5 data...")
+    n5_file = pathlib.Path("external-data/burnbot-post-burn/N5-raw-data-aa-87-13-85_2025-01-07 17_31_26_full.csv")
     df_n5 = read_n5_data(n5_file)
+    now_print(f"... N5 data loaded!")
 
+    # Format the config for the N5 data
     n5_sparse_config = Config.from_default()
-    n5_sparse_config.plot_folder_path = "plots/pepperwood-post-burn/N5/"
+    n5_sparse_config.plot_folder_path = "plots/burnbot-post-burn/N5/"
+    n5_sparse_config.moving_average_window_size_min = datetime.timedelta(minutes=120)
+    # The first two columns are datetime and stationID
+    n5_sensor_name = "all_N5"
+    n5_sparse_config.sensor_headers = {n5_sensor_name: list(df_n5.columns[2:])}
+    n5_station_id = df_n5.columns[1]
+
+    # print("N5 data description:")
+    # print(df_n5.describe())
 
     plots_folder = make_folder_datetime_range(n5_sparse_config)
+    now_print(f"Plots will be saved to {with_color(plots_folder)}")
+
+    # Reformat to fit the existing plotting functions
+    nf_data_dfs = {n5_sensor_name: df_n5}
 
     # Plot the N5 data
-    fig, _ = plot_all_n5_variables(df_n5)
-    save_plot_helper(fig, plots_folder, f"n5_raw_data.png")
+    now_print(f"Plotting {with_color(n5_sensor_name)} data...")
+    fig, _ = plot_all_sensor_variables(nf_data_dfs, sensor=n5_sensor_name,
+                                        config=n5_sparse_config,
+                                        group_col_id=n5_station_id)
+
+    save_plot_helper(fig, plots_folder, f"n5_all_vars_timeseries.png")
+    now_print(f"... {with_color(n5_sensor_name)} data plotted!")
+
+    # Calculate the moving average
+    now_print(f"Calculating moving average for {with_color(n5_sensor_name)}...")
+    moving_avg_dict = {}
+    moving_avg_dict[n5_sensor_name] = calculate_sensor_moving_averages(
+        nf_data_dfs, sensor=n5_sensor_name, config=n5_sparse_config,
+        group_col_id=n5_station_id
+    )
+
+    # Plot the moving average
+    now_print(f"Plotting moving average for {with_color(n5_sensor_name)}...")
+    fig, _ = plot_moving_averages(moving_avg_dict, 
+                                  nf_data_dfs, sensor=n5_sensor_name,
+                                  config=n5_sparse_config,
+                                  group_col_id=n5_station_id)
+    save_plot_helper(fig, plots_folder, f"n5_all_vars_timeseries_moving_avg.png")

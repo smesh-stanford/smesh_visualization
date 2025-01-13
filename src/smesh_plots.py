@@ -172,7 +172,8 @@ def plot_moving_averages(moving_avg_dict: dict,
                          data_dict: dict,
                          sensor: str, 
                          config: Config,
-                         logy: bool = False) -> tuple:
+                         logy: bool = False,
+                         group_col_id: str = 'from_short_name') -> tuple:
     """
     Plot the moving averages for the sensor variables
 
@@ -184,6 +185,7 @@ def plot_moving_averages(moving_avg_dict: dict,
         sensor: str - The sensor to plot
         config: Config - The configuration object
         logy: bool - Whether to use a log scale on the y-axis
+        group_col_id: str - The column to group the data by 
     
     Outputs:
         fig: matplotlib.figure.Figure - The figure object
@@ -199,7 +201,8 @@ def plot_moving_averages(moving_avg_dict: dict,
 
     fig, axes = plot_all_sensor_variables(data_dict, sensor, config,
                                             logy=logy, alpha=0.5,
-                                            use_labels=False)
+                                            use_labels=False,
+                                            group_col_id=group_col_id)
     
     for node_name, node_data in moving_avg_dict[sensor].items():
         for var_id, sensed_var in enumerate(sensor_vars):
