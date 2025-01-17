@@ -53,9 +53,9 @@ def main(config_filepath):
         config.update_headers(smesh_data_dfs)
         now_print(f"... Headers updated!")
 
-        now_print(f"Reformatting radio data...")
-        read_radio_data_from_sensor_data(smesh_data_dfs, config)
-        now_print(f"... Radio data reformatted!")
+    now_print(f"Reformatting radio data...")
+    read_radio_data_from_sensor_data(smesh_data_dfs, config)
+    now_print(f"... Radio data reformatted!")
 
     # Trim the datetime range if necessary
     if config.start_datetime and config.end_datetime:
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/early-winter-break/plotting_config_ca0c.toml")
     # config_filepath = pathlib.Path("data/early-winter-break/plotting_config_f864.toml")
 
-    config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_62e4.toml")
+    config_filepath = pathlib.Path("data/pepperwood-post-burn/plotting_config_2025-01-15.toml")
 
     ######################################################################
 
