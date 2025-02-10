@@ -185,8 +185,9 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/winter-break/plotting_config_ca0c.toml")
     # config_filepath = pathlib.Path("data/early-winter-break/plotting_config_ca0c.toml")
     # config_filepath = pathlib.Path("data/early-winter-break/plotting_config_f864.toml")
+    # config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_62e4.toml")
 
-    config_filepath = pathlib.Path("data/burnbot-post-burn/plotting_config_62e4.toml")
+    config_filepath = pathlib.Path("data/winter-term-packard/plotting_config_0ff4.toml")
 
     ######################################################################
 

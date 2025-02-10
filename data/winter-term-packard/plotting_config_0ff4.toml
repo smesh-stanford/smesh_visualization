@@ -1,0 +1,52 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/winter-term-packard/"
+LOGGER = "0ff4"
+START_DATETIME = ""
+END_DATETIME = ""
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/winter-term-packard/"
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS]
+device_metrics = [30, 630]
+bme688 = [50, 200]
+ina260 = [270, 630]
+pmsa003i = [50, 140]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2025-02-06 11:41:41", # c2b0 goes out
+    "2025-02-06 16:28:00", # cb14 goes out
+    "2025-02-09 10:59:03", # last 0ff4 device metric
+]
