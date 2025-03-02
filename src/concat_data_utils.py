@@ -20,6 +20,24 @@ def get_logger_data_files(logger_name: str, data_dir: pathlib.Path) -> list:
 
     now_print(f"Found {len(data_files)} files for logger " + \
               f"{with_color(logger_name)}")
+    
+    if len(data_files) == 0:
+        now_print(f"No files found for logger {with_color(logger_name)}")
+
+        # We assume all the files are for this logger
+        data_files = list(data_dir.glob("*.csv"))
+        
+        # Rename the files to include the logger name
+        for data_file in data_files:
+            new_name = data_dir / f"{logger_name}_{data_file.name}"
+            data_file.rename(new_name)
+            data_file = new_name
+
+        now_print(f"Renamed {len(data_files)} files to include " + \
+                    f"the logger name {with_color(logger_name)}")
+        
+        # Rerun this function to get the files for this logger
+        data_files = get_logger_data_files(logger_name, data_dir)
 
     return data_files
 

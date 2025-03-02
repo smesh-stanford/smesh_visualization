@@ -22,8 +22,13 @@ if __name__ == "__main__":
     #     data_dir="data/burnbot-post-burn-62e4/",
     #     output_dir="data/burnbot-post-burn/"
     # )
+    # concat_logger_data(
+    #     logger_name="0ff4",
+    #     data_dir="raw_data/data_2025-02-09/data/",
+    #     output_dir="data/winter-term-packard/"
+    # )
     concat_logger_data(
         logger_name="0ff4",
-        data_dir="raw_data/data_2025-02-09/data/",
-        output_dir="data/winter-term-packard/"
+        data_dir="raw_data/data_2025_03_02-pre-dish-hike/data-2025-02-13_18-10-19/0ff4",
+        output_dir="data/pre-dish-hike/"
     )
