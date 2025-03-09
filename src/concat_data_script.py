@@ -7,6 +7,9 @@ This script concatenates all the files from the same logger into one file.
 Author: Daniel Neamati
 """
 
+import pathlib         # Nicer IO than the os library
+import sys             # For system arguments
+
 # Custom imports
 from concat_data_utils import concat_logger_data
 
@@ -27,8 +30,22 @@ if __name__ == "__main__":
     #     data_dir="raw_data/data_2025-02-09/data/",
     #     output_dir="data/winter-term-packard/"
     # )
+
+    # Set default values for easier VS Code debugging
+    logger_name = "0ff4"
+    data_dir = pathlib.Path(
+        r"\raw_data\data_2025-03-09_11-10-19_timechange\data-2025-02-13_18-10-19\0ff4")
+    output_dir = pathlib.Path("data/time_change/")
+
+    if len(sys.argv) > 1:
+        logger_name = sys.argv[1]
+        # The path may be a windows path, so we need to treat it as a raw
+        # string to avoid escape characters
+        data_dir = pathlib.Path(r"{}".format(sys.argv[2]))
+        output_dir = pathlib.Path(r"{}".format(sys.argv[3]))
+
     concat_logger_data(
-        logger_name="0ff4",
-        data_dir="raw_data/data_2025_03_02-pre-dish-hike/data-2025-02-13_18-10-19/0ff4",
-        output_dir="data/pre-dish-hike/"
+        logger_name=logger_name,
+        data_dir=data_dir,
+        output_dir=output_dir
     )

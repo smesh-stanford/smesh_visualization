@@ -4,45 +4,45 @@ import pathlib         # Nicer IO than the os library
 from terminal_utils import with_color, now_print
 
 
-def get_logger_data_files(logger_name: str, data_dir: pathlib.Path) -> list:
+def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
+                          has_logger_prefix: bool = True) -> list:
     """
     Get all the data files for a specific logger.
 
     Inputs:
         logger_name: str, name of the logger (4 digit short name)
         data_dir: pathlib.Path, directory where the data is stored
+        has_logger_prefix: bool, whether the logger name starts the filename
     
     Outputs:
         data_files: list of pathlib.Path, list of data files
     """
-    # Get all the files in the data directory
-    data_files = list(data_dir.glob(f"{logger_name}_*.csv"))
+    if has_logger_prefix:
+        # Get all the files in the data directory
+        data_files = list(data_dir.glob(f"{logger_name}_*.csv"))
 
-    now_print(f"Found {len(data_files)} files for logger " + \
-              f"{with_color(logger_name)}")
-    
-    if len(data_files) == 0:
-        now_print(f"No files found for logger {with_color(logger_name)}")
+        now_print(f"Found {len(data_files)} files for logger " + \
+                f"{with_color(logger_name)}")
+        
+        if len(data_files) == 0:
+            now_print(f"No files found for logger {with_color(logger_name)}")
+            
+            # Rerun this function to get the files for this logger
+            data_files, has_logger_prefix = get_logger_data_files(
+                logger_name, data_dir, has_logger_prefix=False)
+    else:
+        now_print(f"Assuming no logger name prefix")
 
         # We assume all the files are for this logger
         data_files = list(data_dir.glob("*.csv"))
-        
-        # Rename the files to include the logger name
-        for data_file in data_files:
-            new_name = data_dir / f"{logger_name}_{data_file.name}"
-            data_file.rename(new_name)
-            data_file = new_name
 
-        now_print(f"Renamed {len(data_files)} files to include " + \
-                    f"the logger name {with_color(logger_name)}")
-        
-        # Rerun this function to get the files for this logger
-        data_files = get_logger_data_files(logger_name, data_dir)
+        now_print(f"Found {len(data_files)} files for logger " + \
+                f"{with_color(logger_name)}")
 
-    return data_files
+    return data_files, has_logger_prefix
 
 
-def group_sensor_files(data_filenames):
+def group_sensor_files(data_filenames, has_logger_prefix: bool = True):
     """
     Group the data files by the sensor type based on the filename.
 
@@ -53,12 +53,24 @@ def group_sensor_files(data_filenames):
         data_files_dict: dict, keys are the sensor types and 
                                the values are lists of pathlib.Path objects
     """
+    # The sensor type is the second part of the filename if the logger name is 
+    # present
+    # e.g, ca0c_airQualityMetrics_2024-12-19_11-25-29.csv
+    #           ^^^^^^^^^^^^^^^^^
+    # Otherwise, it is the first part of the filename
+    # e.g, airQualityMetrics_2024-12-19_11-25-29.csv
+    #      ^^^^^^^^^^^^^^^^^
+    sensor_type_idx = 1 if has_logger_prefix else 0
+
     data_files_dict = {}
     for data_file in data_filenames:
-        # The sensor type is the second part of the filename
-        # e.g, ca0c_airQualityMetrics_2024-12-19_11-25-29.csv
-        #           ^^^^^^^^^^^^^^^^^
-        sensor_type = data_file.name.split("_")[1]
+
+        assert isinstance(data_file, pathlib.Path), \
+            "data_filenames should be a list of pathlib.Path objects. " + \
+            f"Found {type(data_file)} instead." + \
+            f"Offending file: {data_file}"
+        
+        sensor_type = data_file.name.split("_")[sensor_type_idx]
 
         if sensor_type not in data_files_dict:
             data_files_dict[sensor_type] = []
@@ -142,6 +154,9 @@ def concat_logger_data(logger_name: str,
     ca0c_environmentMetrics.csv
     ca0c_powerMetrics.csv
 
+    Also works if the logger name is not present in the filename. But, it will
+    still save as if the logger name is present in the filename.
+
     Inputs:
         logger_name: str, name of the logger (4 digit short name)
         data_dir: pathlib.Path, directory where the data is stored
@@ -154,11 +169,15 @@ def concat_logger_data(logger_name: str,
     data_dir = pathlib.Path(data_dir)
     output_dir = pathlib.Path(output_dir)
 
+    # Check that these are indeed directories
+    assert data_dir.is_dir(), f"{data_dir} is not a directory."
+    assert output_dir.is_dir(), f"{output_dir} is not a directory."
+
     # Get all the data files for the logger
-    data_files = get_logger_data_files(logger_name, data_dir)
+    data_files, has_logger_prefix = get_logger_data_files(logger_name, data_dir)
 
     # Group the files by the type of data they contain
-    data_files_dict = group_sensor_files(data_files)
+    data_files_dict = group_sensor_files(data_files, has_logger_prefix)
 
     # Concatenate the data
     for sensor_type, data_files in data_files_dict.items():
