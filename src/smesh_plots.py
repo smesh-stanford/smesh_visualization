@@ -294,15 +294,22 @@ def plot_correlation_scatter(data_dict: dict, sensor: str,
     dt_time_to_days = lambda x: x.total_seconds() / (60 * 60 * 24)
     diff_from_start_in_days = diff_from_start.apply(dt_time_to_days)
 
+    im_for_colorbar = None
+    num_data_points = 0
+
     for i, var1 in enumerate(sensor_vars):
         for j, var2 in enumerate(sensor_vars):
             # Color by the index of the data
-            im_for_colorbar = axes[j, i].scatter(
+            scatter_im = axes[j, i].scatter(
                                 x=var1, y=var2,
                                 data=curr_data_df, s=0.25,
                                 c=diff_from_start_in_days)
-            # c=curr_data_df["datetime"].apply(lambda x: x.timestamp()))
-            # c=range(len(curr_data_df)))
+            
+            curr_num_data_points = len(curr_data_df[var1])
+            if curr_num_data_points > num_data_points:
+                num_data_points = curr_num_data_points
+                im_for_colorbar = scatter_im            
+
             axes[j, i].grid(True)
 
             # only set the x-axis label for the bottom row
