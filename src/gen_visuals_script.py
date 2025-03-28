@@ -190,7 +190,8 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/pre-dish-hike/plotting_config_0ff4.toml")
 
     # config_filepath = pathlib.Path("data/time_change/plotting_config_0ff4.toml")
-    config_filepath = pathlib.Path("data/post-dish-hike/plotting_config_0ff4.toml")
+    # config_filepath = pathlib.Path("data/post-dish-hike/plotting_config_0ff4.toml")
+    config_filepath = pathlib.Path("data/spring-break/plotting_config_0ff4.toml")
 
     ######################################################################
 
