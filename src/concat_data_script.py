@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # Set default values for easier VS Code debugging
     logger_name = "0ff4"
     data_dir = pathlib.Path(
-        r"\raw_data\data_2025-03-09_11-10-19_timechange\data-2025-02-13_18-10-19\0ff4")
-    output_dir = pathlib.Path("data/time_change/")
+        r"raw_data\data_2025-03-28_10-56-00_springbreak\data-2025-02-13_18-10-19\0ff4")
+    output_dir = pathlib.Path("data/spring-break/")
 
     if len(sys.argv) > 1:
         logger_name = sys.argv[1]

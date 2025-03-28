@@ -1,7 +1,7 @@
 import pathlib         # Nicer IO than the os library
 
 # Custom imports
-from terminal_utils import with_color, now_print
+from terminal_utils import with_color, now_print, check_directory_cascade_exists
 
 
 def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
@@ -170,8 +170,17 @@ def concat_logger_data(logger_name: str,
     output_dir = pathlib.Path(output_dir)
 
     # Check that these are indeed directories
-    assert data_dir.is_dir(), f"{data_dir} is not a directory."
-    assert output_dir.is_dir(), f"{output_dir} is not a directory."
+    assert check_directory_cascade_exists(data_dir)
+    assert check_directory_cascade_exists(output_dir)
+
+    # assert data_dir.is_dir(), f"{data_dir} is not a directory. " + \
+    #     f"The current working directory is {pathlib.Path.cwd()}. " + \
+    #     f"The parent directory is {data_dir.parent}. Is this a directory? " + \
+    #     f"{data_dir.parent.is_dir()}"
+    # assert output_dir.is_dir(), f"{output_dir} is not a directory." + \
+    #     f"The current working directory is {pathlib.Path.cwd()}. " + \
+    #     f"The parent directory is {output_dir.parent}. Is this a directory? " + \
+    #     f"{output_dir.parent.is_dir()}"
 
     # Get all the data files for the logger
     data_files, has_logger_prefix = get_logger_data_files(logger_name, data_dir)
