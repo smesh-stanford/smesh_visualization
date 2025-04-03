@@ -1,0 +1,51 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/0b38-reset/"
+LOGGER = "0ff4"
+START_DATETIME = "2025-03-24 12:00:00"
+END_DATETIME = "2025-04-03 00:00:00"
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/0b38-reset/"
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS]
+device_metrics = [30, 630]
+bme688 = [50, 200]
+ina260 = [270, 630]
+pmsa003i = [50, 140]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2025-03-28 10:50:00",
+    "2025-04-02 17:45:00", # Arrived at dish to reset 0b38
+]
