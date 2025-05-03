@@ -192,7 +192,9 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/time_change/plotting_config_0ff4.toml")
     # config_filepath = pathlib.Path("data/post-dish-hike/plotting_config_0ff4.toml")
     # config_filepath = pathlib.Path("data/spring-break/plotting_config_0ff4.toml")
-    config_filepath = pathlib.Path("data/0b38-reset/plotting_config_0ff4.toml")
+    # config_filepath = pathlib.Path("data/0b38-reset/plotting_config_0ff4.toml")
+
+    config_filepath = pathlib.Path("data/0b38-recovery/plotting_config_f864.toml")
 
     ######################################################################
 

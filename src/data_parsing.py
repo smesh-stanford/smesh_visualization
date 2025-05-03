@@ -75,6 +75,11 @@ def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
         if not config.csv_has_headers:
             # If we do not have the headers, we need to add them
             data_dfs[sensor].columns = config.full_data_headers[sensor]
+
+        # Make sure all zeroth column values are datetime objects
+        # 'coerce' means that if the conversion fails, it will return NaT
+        data_dfs[sensor]['datetime'] = pd.to_datetime(
+            data_dfs[sensor]['datetime'], errors='coerce')
         
         # Include the short name out of convenience
         data_dfs[sensor]['from_short_name'] = get_short_name(data_dfs[sensor])
