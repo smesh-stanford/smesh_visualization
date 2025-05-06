@@ -84,9 +84,37 @@ def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
         # Include the short name out of convenience
         data_dfs[sensor]['from_short_name'] = get_short_name(data_dfs[sensor])
 
+        # Replace the empty PM data with 0
+        if sensor == "airQualityMetrics":
+            data_dfs[sensor] = fill_empty_pm_data(
+                data_dfs[sensor], header_prefix="pm")
+
         now_print("... Sensor completed!")
         
     return data_dfs
+
+
+def fill_empty_pm_data(pm_df: pd.DataFrame, header_prefix: str = "pm") -> pd.DataFrame:
+    """
+    If the PMSA measures nothing, it sends and empty string. By the time it is
+    in a dataframe, it is a NaN. This function fills the empty data with the
+    zero.
+
+    Inputs:
+        pm_df: pd.DataFrame - The dataframe to fill
+        header_prefix: str   - The prefix of the PM headers
+
+    Outputs:
+        pm_df: pd.DataFrame - The filled dataframe
+    """
+    # Get the PM headers
+    pm_headers = [header for header in pm_df.columns if header.startswith(header_prefix)]
+
+    # Fill the empty PM data with the previous values
+    for header in pm_headers:
+        pm_df[header] = pm_df[header].fillna(0)
+
+    return pm_df
 
 
 def read_radio_data_from_sensor_data(data_dfs: dict, 
