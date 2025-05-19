@@ -1,0 +1,50 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/pre-henrycowell/"
+LOGGER = "f864"
+START_DATETIME = "2025-05-16 11:00:00"
+END_DATETIME = "2025-05-19 11:00:00"
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/pre-henrycowell/"
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS]
+device_metrics = [30, 630]
+bme688 = [50, 200]
+ina260 = [270, 630]
+pmsa003i = [50, 140]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2025-05-17 10:30:00"
+]
