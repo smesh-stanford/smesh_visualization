@@ -17,8 +17,8 @@ powerMetrics = []
 ########################################################
 
 [IO_CONFIG]
-DATAFOLDERPATH = "data/pre-henrycowell/"
-LOGGER = "376c"
+DATAFOLDERPATH = "data/scotts-valley-pre-burn/"
+LOGGER = "9c88"
 START_DATETIME = ""
 END_DATETIME = ""
 
@@ -27,7 +27,7 @@ END_DATETIME = ""
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/pre-henrycowell/"
+PLOTFOLDERPATH = "plots/scotts-valley-pre-burn/"
 DPI = 300
 
 MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes

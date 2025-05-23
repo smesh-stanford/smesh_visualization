@@ -17,17 +17,17 @@ powerMetrics = []
 ########################################################
 
 [IO_CONFIG]
-DATAFOLDERPATH = "data/pre-henrycowell/"
-LOGGER = "f864"
-START_DATETIME = "2025-05-16 11:00:00"
-END_DATETIME = "2025-05-19 11:00:00"
+DATAFOLDERPATH = "data/scotts-valley-pre-burn/"
+LOGGER = "0ff4"
+START_DATETIME = "2025-05-17 11:00:00"
+END_DATETIME = "2025-05-18 19:00:00"
 
 ########################################################
 # Plotting Configuration
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/pre-henrycowell/"
+PLOTFOLDERPATH = "plots/scotts-valley-pre-burn/"
 DPI = 300
 
 MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
