@@ -17,7 +17,7 @@ powerMetrics = []
 ########################################################
 
 [IO_CONFIG]
-DATAFOLDERPATH = "data/pepperwood_2025_gdrive_10-19_21-30/"
+DATAFOLDERPATH = "data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-19_21-30/"
 LOGGER = "f864"
 START_DATETIME = ""
 END_DATETIME = ""
@@ -27,7 +27,7 @@ END_DATETIME = ""
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/pepperwood_2025_gdrive_10-19_21-30/"
+PLOTFOLDERPATH = "plots/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-19_21-30/"
 DPI = 300
 
 MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
