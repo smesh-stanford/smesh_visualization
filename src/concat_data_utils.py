@@ -31,7 +31,7 @@ def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
             data_files, has_logger_prefix = get_logger_data_files(
                 logger_name, data_dir, has_logger_prefix=False)
     else:
-        now_print(f"Assuming no logger name prefix")
+        now_print(f"Assuming no logger name prefix at directory {data_dir}")
 
         # We assume all the files are for this logger
         data_files = list(data_dir.glob("*.csv"))
