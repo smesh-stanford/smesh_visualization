@@ -59,6 +59,30 @@ def highlight_nighttime(ax, curr_data_df):
                    curr_sunrise_datetime, 
                    color='grey', alpha=0.25, zorder=0)
 
+def add_event_highlight(ax, curr_data_df, event_highlight_datetimes):
+    """
+    Highlight the event datatimes in the plot
+
+    Inputs:
+        ax: matplotlib.axes.Axes - The axes to plot on
+        curr_data_df: pd.DataFrame - The current data (for the datetime range)
+        event_highlight_datetimes: list[list[datetime.datetime]] - A n x 2 list where each element contains the start and end interval of the event
+
+    Outputs:
+        None, ax is modified in place
+
+    """
+    min_datetime = curr_data_df['datetime'].iloc[0]
+    max_datetime = curr_data_df['datetime'].iloc[-1]
+
+    for event_times in event_highlight_datetimes:
+        if event_times[0] > min_datetime and event_times[1] > min_datetime and event_times[0] < max_datetime and event_times[1] < max_datetime:
+            ax.axvspan(event_times[0], 
+                       event_times[1], 
+                       color='blue', alpha=0.25, zorder=0)
+
+
+
 
 def add_event_lines(ax, curr_data_df, event_datetimes):
     """
@@ -138,6 +162,11 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
         
         if config.event_datetimes is not None:
             add_event_lines(axes[var_id], curr_data_df, config.event_datetimes)
+
+        if config.event_highlight_datetimes is not None:
+            add_event_highlight(axes[var_id], curr_data_df, config.event_highlight_datetimes)
+
+
 
         if logy:
             axes[var_id].set_yscale('log')
@@ -400,6 +429,9 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
     if config.event_datetimes is not None:
         add_event_lines(ax, curr_data_df, config.event_datetimes)
 
+    if config.event_highlight_datetimes is not None:
+        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
+
     highlight_nighttime(ax, curr_data_df)
     plt.xlim([minx, maxx])
     
@@ -488,6 +520,9 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
 
     if config.event_datetimes is not None:
         add_event_lines(ax, curr_data_df, config.event_datetimes)
+
+    if config.event_highlight_datetimes is not None:
+        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)

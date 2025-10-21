@@ -19,8 +19,8 @@ powerMetrics = []
 [IO_CONFIG]
 DATAFOLDERPATH = "data/scotts-valley-post-burn/"
 LOGGER = "9c88"
-START_DATETIME = ""
-END_DATETIME = ""
+START_DATETIME = "2025-05-20 5:00:00"
+END_DATETIME = "2025-05-20 23:59:00"
 
 ########################################################
 # Plotting Configuration
@@ -49,5 +49,18 @@ EVENT_DATETIMES = [
     "2025-05-19 15:00:00", # Arrived to set up the snodes
     "2025-05-19 16:00:00", # Departed from the burn site (roughly)
     "2025-05-20 11:05:00", # Start of burn
-    "2025-05-23 10:00:00"  # Arrived to pick up the snodes
+    "2025-05-23 10:00:00", # Arrived to pick up the snodes
+    "2025-05-20 15:20:00", # Wind starting to change
+    "2025-05-20 15:45:00"  
 ]
+
+########################################################
+# Events Highlight Configuration
+########################################################
+
+[EVENTS_HIGHLIGHTS_CONFIG]
+EVENT_HIGHLIGHT_DATETIMES = [
+    ["2025-05-20 15:20:00", # Wind starting to change
+    "2025-05-20 15:45:00"] # Wind flipped
+]
+

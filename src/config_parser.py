@@ -58,6 +58,10 @@ class Config:
     # The event datetimes for the data
     event_datetimes: List[datetime.datetime]
 
+    # Optional list of list of 2 event datetimes to highlight for the data
+    event_highlight_datetimes: List[List[datetime.datetime]]
+
+
     # Moving average window size
     moving_average_window_size_min: datetime.timedelta
 
@@ -138,6 +142,17 @@ class Config:
             for event_time in events_config["EVENT_DATETIMES"]
         ]
 
+
+        #Making EVENTS_HIGHLIGHTS_CONFIG an optional argument so it does not need to be include in all config files
+        try:
+            events_highlight_config = top_config["EVENTS_HIGHLIGHTS_CONFIG"]
+            event_highlight_datetimes = [
+            [datetime.datetime.strptime(event, datetime_format) for event in event_time]
+            for event_time in events_highlight_config["EVENT_HIGHLIGHT_DATETIMES"]
+        ]
+        except KeyError:
+            event_highlight_datetimes = None
+
         return cls(
             csv_has_headers=csv_has_headers,
             base_headers=sensor_config["BASE_HEADERS"],
@@ -154,7 +169,8 @@ class Config:
             start_datetime=start_datetime,
             end_datetime=end_datetime,
             event_datetimes=event_datetimes,
-            moving_average_window_size_min=moving_average_window_size_min
+            moving_average_window_size_min=moving_average_window_size_min,
+            event_highlight_datetimes=event_highlight_datetimes
         )
     
 
