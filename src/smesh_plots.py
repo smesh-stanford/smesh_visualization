@@ -42,6 +42,7 @@ def highlight_nighttime(ax, curr_data_df):
         None, ax is modified in place
     """
     # Fill in the x-axis with grey from 6pm to 6am to represent night time
+    curr_data_df = curr_data_df.sort_values(by = "datetime")
     earliest_day = curr_data_df['datetime'].iloc[0].date()
     latest_day = curr_data_df['datetime'].iloc[-1].date()
 
@@ -396,7 +397,7 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
         fig: matplotlib.figure.Figure - The figure object
         ax: matplotlib.axes.Axes - The axes
     """
-    curr_data_df = data_dict[sensor]
+    curr_data_df = data_dict[sensor].sort_values(by = "datetime")
     datetime_values = curr_data_df['datetime']
 
     num_days = (datetime_values.iloc[-1] - datetime_values.iloc[0]).days + 1
@@ -460,6 +461,7 @@ def get_sensor_interval(data_dict: dict, sensor: str,
 
     for node_name, node_data in curr_data_df.groupby(group_col_id):
         # Check if the datetime is sorted
+        node_data = node_data.sort_values(by = "datetime")
         if not node_data['datetime'].is_monotonic_increasing:
             print_issue(f"Data for {node_name} is not sorted by datetime.")
 
