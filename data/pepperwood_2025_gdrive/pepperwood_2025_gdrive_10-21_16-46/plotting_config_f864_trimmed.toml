@@ -27,7 +27,7 @@ END_DATETIME = "2025-10-21 17:10:00"
 ########################################################
 
 [PLOTTING_CONFIG]
-PLOTFOLDERPATH = "plots/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-21_16-45/"
+PLOTFOLDERPATH = ""
 DPI = 300
 
 MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes

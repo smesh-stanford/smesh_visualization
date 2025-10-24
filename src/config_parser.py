@@ -153,6 +153,16 @@ class Config:
         except KeyError:
             event_highlight_datetimes = None
 
+        #Empty PLOTFOLDERPATH means should be plotted with similar path as DATAFOLDERPATH
+        if plot_config["PLOTFOLDERPATH"] == "":
+            data_folder_parts = io_config["DATAFOLDERPATH"].split("/")
+            data_folder_parts[0] = "plots" #Replace data directory with plots directory
+            plot_folder_path = "/".join(data_folder_parts)
+        else:
+            plot_folder_path = plot_config["PLOTFOLDERPATH"]
+
+        
+
         return cls(
             csv_has_headers=csv_has_headers,
             base_headers=sensor_config["BASE_HEADERS"],
@@ -162,7 +172,7 @@ class Config:
             full_data_headers=full_data_headers,
             data_folder_path=io_config["DATAFOLDERPATH"],
             logger=io_config["LOGGER"],
-            plot_folder_path=plot_config["PLOTFOLDERPATH"],
+            plot_folder_path=plot_folder_path,
             dpi=plot_config["DPI"],
             log_y_names=plot_config["LOG_Y_NAMES"],
             interval_bounds=plot_config["INTERVAL_BOUNDS"],

@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # Set default values for easier VS Code debugging
     logger_name = "f864"
     data_dir = pathlib.Path(
-        r"raw_data/pepperwood_2025-10-18_15-42")
-    output_dir = pathlib.Path("data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-21_16-45")
+        r"raw_data/pepperwood_2025-10-23_19-54")
+    output_dir = pathlib.Path("data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-23_19-54")
 
     if len(sys.argv) > 1:
         logger_name = sys.argv[1]
