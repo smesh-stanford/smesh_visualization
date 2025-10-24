@@ -19,7 +19,7 @@ powerMetrics = []
 [IO_CONFIG]
 DATAFOLDERPATH = "data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-23_19-54/"
 LOGGER = "f864"
-START_DATETIME = "2025-10-19 12:00:00"
+START_DATETIME = "2025-10-23 09:00:00"
 END_DATETIME = "2025-10-23 19:10:00"
 
 ########################################################
