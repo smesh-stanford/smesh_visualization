@@ -13,6 +13,13 @@ from config_parser import Config
 #     astral_available = False
 #     print("Astral library not available")
 
+#Global color map that makes each plot have same colors for each node
+GLOBAL_CMAP = {}
+
+#20 possible colors to map from
+GLOBAL_COLORMAP_SOURCE = plt.cm.get_cmap('tab20', 20)
+
+
 def save_plot_helper(fig, folder, filename, dpi=300):
     """
     Save the plot to the filename with the specified dpi
@@ -106,7 +113,6 @@ def add_event_lines(ax, curr_data_df, event_datetimes):
         if event_time > min_datetime and event_time < max_datetime:
             ax.axvline(x=event_time, color='k', linestyle='--')
 
-
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
                               config: Config,
                               logy: bool = False,
@@ -148,10 +154,12 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
     curr_data_df = data_dict[sensor]
 
     for node_name, node_data in curr_data_df.groupby(group_col_id):
+        if node_name not in GLOBAL_CMAP:
+            GLOBAL_CMAP[node_name] = GLOBAL_COLORMAP_SOURCE(len(GLOBAL_CMAP))
         for var_id, sensed_var in enumerate(sensor_vars):
             label = node_name if use_labels else None
             axes[var_id].scatter(x='datetime', y=sensed_var,
-                           data=node_data, label=label, s=1, alpha=alpha)
+                           data=node_data, label=label, s=1, alpha=alpha, color = GLOBAL_CMAP[node_name])
 
     for var_id, sensed_var in enumerate(sensor_vars):
         axes[var_id].grid(True)
@@ -232,9 +240,11 @@ def plot_moving_averages(moving_avg_dict: dict,
                                             use_labels=False)
     
     for node_name, node_data in moving_avg_dict[sensor].items():
+        if node_name not in GLOBAL_CMAP:
+            GLOBAL_CMAP[node_name] = GLOBAL_COLORMAP_SOURCE(len(GLOBAL_CMAP))
         for var_id, sensed_var in enumerate(sensor_vars):
             axes[var_id].plot(node_data['datetime'], node_data[sensed_var],
-                label=f"{node_name} Moving Average [{window_min_int} min]")
+                label=f"{node_name} Moving Average [{window_min_int} min]", color = GLOBAL_CMAP[node_name])
             
     for var_id, sensed_var in enumerate(sensor_vars):
         axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
