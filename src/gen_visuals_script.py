@@ -195,8 +195,10 @@ if __name__ == "__main__":
     # config_filepath = pathlib.Path("data/0b38-reset/plotting_config_0ff4.toml")
 
     # config_filepath = pathlib.Path("data/0b38-recovery/plotting_config_f864.toml")
+    # config_filepath = pathlib.Path("data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-21_16-45/plotting_config_f864_trimmed.toml")
 
-    config_filepath = pathlib.Path("data/pepperwood_2025_gdrive_10-19_21-30/plotting_config_f864.toml")
+    config_filepath = pathlib.Path("data/pepperwood_2025_gdrive/pepperwood_2025_gdrive_10-23_19-54/plotting_config_f864_2025-10-23.toml")
+
 
     ######################################################################
 

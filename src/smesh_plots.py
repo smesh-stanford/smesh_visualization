@@ -13,6 +13,13 @@ from config_parser import Config
 #     astral_available = False
 #     print("Astral library not available")
 
+#Global color map that makes each plot have same colors for each node
+GLOBAL_CMAP = {}
+
+#20 possible colors to map from
+GLOBAL_COLORMAP_SOURCE = plt.cm.get_cmap('tab20', 20)
+
+
 def save_plot_helper(fig, folder, filename, dpi=300):
     """
     Save the plot to the filename with the specified dpi
@@ -42,6 +49,7 @@ def highlight_nighttime(ax, curr_data_df):
         None, ax is modified in place
     """
     # Fill in the x-axis with grey from 6pm to 6am to represent night time
+    curr_data_df = curr_data_df.sort_values(by = "datetime")
     earliest_day = curr_data_df['datetime'].iloc[0].date()
     latest_day = curr_data_df['datetime'].iloc[-1].date()
 
@@ -58,6 +66,30 @@ def highlight_nighttime(ax, curr_data_df):
         ax.axvspan(curr_sunset_datetime - datetime.timedelta(days=1), 
                    curr_sunrise_datetime, 
                    color='grey', alpha=0.25, zorder=0)
+
+def add_event_highlight(ax, curr_data_df, event_highlight_datetimes):
+    """
+    Highlight the event datatimes in the plot
+
+    Inputs:
+        ax: matplotlib.axes.Axes - The axes to plot on
+        curr_data_df: pd.DataFrame - The current data (for the datetime range)
+        event_highlight_datetimes: list[list[datetime.datetime]] - A n x 2 list where each element contains the start and end interval of the event
+
+    Outputs:
+        None, ax is modified in place
+
+    """
+    min_datetime = curr_data_df['datetime'].iloc[0]
+    max_datetime = curr_data_df['datetime'].iloc[-1]
+
+    for event_times in event_highlight_datetimes:
+        if event_times[0] > min_datetime and event_times[1] > min_datetime and event_times[0] < max_datetime and event_times[1] < max_datetime:
+            ax.axvspan(event_times[0], 
+                       event_times[1], 
+                       color='blue', alpha=0.25, zorder=0)
+
+
 
 
 def add_event_lines(ax, curr_data_df, event_datetimes):
@@ -80,7 +112,6 @@ def add_event_lines(ax, curr_data_df, event_datetimes):
     for event_time in event_datetimes:
         if event_time > min_datetime and event_time < max_datetime:
             ax.axvline(x=event_time, color='k', linestyle='--')
-
 
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
                               config: Config,
@@ -123,10 +154,12 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
     curr_data_df = data_dict[sensor]
 
     for node_name, node_data in curr_data_df.groupby(group_col_id):
+        if node_name not in GLOBAL_CMAP:
+            GLOBAL_CMAP[node_name] = GLOBAL_COLORMAP_SOURCE(len(GLOBAL_CMAP))
         for var_id, sensed_var in enumerate(sensor_vars):
             label = node_name if use_labels else None
             axes[var_id].scatter(x='datetime', y=sensed_var,
-                           data=node_data, label=label, s=1, alpha=alpha)
+                           data=node_data, label=label, s=1, alpha=alpha, color = GLOBAL_CMAP[node_name])
 
     for var_id, sensed_var in enumerate(sensor_vars):
         axes[var_id].grid(True)
@@ -138,6 +171,11 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
         
         if config.event_datetimes is not None:
             add_event_lines(axes[var_id], curr_data_df, config.event_datetimes)
+
+        if config.event_highlight_datetimes is not None:
+            add_event_highlight(axes[var_id], curr_data_df, config.event_highlight_datetimes)
+
+
 
         if logy:
             axes[var_id].set_yscale('log')
@@ -202,9 +240,11 @@ def plot_moving_averages(moving_avg_dict: dict,
                                             use_labels=False)
     
     for node_name, node_data in moving_avg_dict[sensor].items():
+        if node_name not in GLOBAL_CMAP:
+            GLOBAL_CMAP[node_name] = GLOBAL_COLORMAP_SOURCE(len(GLOBAL_CMAP))
         for var_id, sensed_var in enumerate(sensor_vars):
             axes[var_id].plot(node_data['datetime'], node_data[sensed_var],
-                label=f"{node_name} Moving Average [{window_min_int} min]")
+                label=f"{node_name} Moving Average [{window_min_int} min]", color = GLOBAL_CMAP[node_name])
             
     for var_id, sensed_var in enumerate(sensor_vars):
         axes[var_id].legend(bbox_to_anchor=(1.01, 1), loc='upper left',
@@ -367,7 +407,7 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
         fig: matplotlib.figure.Figure - The figure object
         ax: matplotlib.axes.Axes - The axes
     """
-    curr_data_df = data_dict[sensor]
+    curr_data_df = data_dict[sensor].sort_values(by = "datetime")
     datetime_values = curr_data_df['datetime']
 
     num_days = (datetime_values.iloc[-1] - datetime_values.iloc[0]).days + 1
@@ -400,6 +440,9 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
     if config.event_datetimes is not None:
         add_event_lines(ax, curr_data_df, config.event_datetimes)
 
+    if config.event_highlight_datetimes is not None:
+        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
+
     highlight_nighttime(ax, curr_data_df)
     plt.xlim([minx, maxx])
     
@@ -428,6 +471,7 @@ def get_sensor_interval(data_dict: dict, sensor: str,
 
     for node_name, node_data in curr_data_df.groupby(group_col_id):
         # Check if the datetime is sorted
+        node_data = node_data.sort_values(by = "datetime")
         if not node_data['datetime'].is_monotonic_increasing:
             print_issue(f"Data for {node_name} is not sorted by datetime.")
 
@@ -488,6 +532,9 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
 
     if config.event_datetimes is not None:
         add_event_lines(ax, curr_data_df, config.event_datetimes)
+
+    if config.event_highlight_datetimes is not None:
+        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)

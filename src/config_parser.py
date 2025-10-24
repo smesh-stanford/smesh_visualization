@@ -58,6 +58,10 @@ class Config:
     # The event datetimes for the data
     event_datetimes: List[datetime.datetime]
 
+    # Optional list of list of 2 event datetimes to highlight for the data
+    event_highlight_datetimes: List[List[datetime.datetime]]
+
+
     # Moving average window size
     moving_average_window_size_min: datetime.timedelta
 
@@ -138,6 +142,27 @@ class Config:
             for event_time in events_config["EVENT_DATETIMES"]
         ]
 
+
+        #Making EVENTS_HIGHLIGHTS_CONFIG an optional argument so it does not need to be include in all config files
+        try:
+            events_highlight_config = top_config["EVENTS_HIGHLIGHTS_CONFIG"]
+            event_highlight_datetimes = [
+            [datetime.datetime.strptime(event, datetime_format) for event in event_time]
+            for event_time in events_highlight_config["EVENT_HIGHLIGHT_DATETIMES"]
+        ]
+        except KeyError:
+            event_highlight_datetimes = None
+
+        #Empty PLOTFOLDERPATH means should be plotted with similar path as DATAFOLDERPATH
+        if plot_config["PLOTFOLDERPATH"] == "":
+            data_folder_parts = io_config["DATAFOLDERPATH"].split("/")
+            data_folder_parts[0] = "plots" #Replace data directory with plots directory
+            plot_folder_path = "/".join(data_folder_parts)
+        else:
+            plot_folder_path = plot_config["PLOTFOLDERPATH"]
+
+        
+
         return cls(
             csv_has_headers=csv_has_headers,
             base_headers=sensor_config["BASE_HEADERS"],
@@ -147,14 +172,15 @@ class Config:
             full_data_headers=full_data_headers,
             data_folder_path=io_config["DATAFOLDERPATH"],
             logger=io_config["LOGGER"],
-            plot_folder_path=plot_config["PLOTFOLDERPATH"],
+            plot_folder_path=plot_folder_path,
             dpi=plot_config["DPI"],
             log_y_names=plot_config["LOG_Y_NAMES"],
             interval_bounds=plot_config["INTERVAL_BOUNDS"],
             start_datetime=start_datetime,
             end_datetime=end_datetime,
             event_datetimes=event_datetimes,
-            moving_average_window_size_min=moving_average_window_size_min
+            moving_average_window_size_min=moving_average_window_size_min,
+            event_highlight_datetimes=event_highlight_datetimes
         )
     
 
