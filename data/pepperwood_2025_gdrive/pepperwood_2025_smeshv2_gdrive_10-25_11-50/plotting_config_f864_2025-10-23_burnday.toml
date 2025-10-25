@@ -1,0 +1,56 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/pepperwood_2025_gdrive/pepperwood_2025_smeshv2_gdrive_10-25_11-50/"
+LOGGER = "f864"
+START_DATETIME = "2025-10-23 08:00:00"
+END_DATETIME = "2025-10-23 14:00:00"
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "" #Leave empty to have same end pathname as plots/DATAFOLDERPATH
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS] # Seconds
+device_metrics = [30, 2000]
+bme688 = [50, 2000]
+ina260 = [270, 2000]
+pmsa003i = [50, 2000]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2025-10-19 13:00:00", # Arrived to set up the snodes
+    "2025-10-19 14:12:00", # Disconnected 0b38 near logger (SMesh 3 - f864)
+    "2025-10-19 16:00:00", # Departed from the burn site (roughly)
+    "2025-10-23 11:10:00", # Start of the burn
+    "2025-10-23 12:22:00", # Start of firing at the Dwight Center
+    "2025-10-23 13:30:00", # Depart from Pepperwood
+    "2025-10-24 14:15:00", # Rekindled smoke
+]
