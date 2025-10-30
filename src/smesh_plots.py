@@ -68,7 +68,7 @@ def highlight_nighttime(ax, curr_data_df):
                    color='grey', alpha=0.25, zorder=0)
 
 def add_event_highlight(ax, curr_data_df, event_highlight_datetimes, 
-    check_bounds: bool = False):
+    check_bounds: bool = True):
     """
     Highlight the event datatimes in the plot
 
@@ -103,7 +103,7 @@ def add_event_highlight(ax, curr_data_df, event_highlight_datetimes,
                    color='blue', alpha=0.25, zorder=0)
 
 
-def add_event_lines(ax, curr_data_df, event_datetimes, check_bounds: bool = False):
+def add_event_lines(ax, curr_data_df, event_datetimes, check_bounds: bool = True):
     """
     Add vertical lines for the events if they are relevant to the current plot
 
@@ -151,8 +151,6 @@ def remove_outliers_from_data(data_df, outlier_value: float = 1e5,
     Outputs:
         data_df: pd.DataFrame - The data with outliers removed
     """
-    num_nan_originally = data_df.isna().sum().sum()
-
     # Only remove outliers if it is a numerical column
     numerical_columns = data_df.select_dtypes(include=['number']).columns
     numerical_columns = [col for col in numerical_columns if col not in cols_to_ignore]
