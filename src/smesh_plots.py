@@ -67,74 +67,49 @@ def highlight_nighttime(ax, curr_data_df):
                    curr_sunrise_datetime, 
                    color='grey', alpha=0.25, zorder=0)
 
-def add_event_highlight(ax, curr_data_df, event_highlight_datetimes, 
-    check_bounds: bool = True):
+def add_event_highlight(ax, event_highlight_datetimes):
     """
     Highlight the event datatimes in the plot
 
     Inputs:
         ax: matplotlib.axes.Axes - The axes to plot on
-        curr_data_df: pd.DataFrame - The current data (for the datetime range)
         event_highlight_datetimes: list[list[datetime.datetime]] - A n x 2 list where each element contains the start and end interval of the event
-        check_bounds: bool - Whether to check if the event is within the bounds of the data
 
     Outputs:
         None, ax is modified in place
 
     """
-    min_datetime = curr_data_df['datetime'].iloc[0]
-    max_datetime = curr_data_df['datetime'].iloc[-1]
+    # Current axis limits
+    minx, maxx = ax.get_xlim()
 
     for event_times in event_highlight_datetimes:
-
-        # print("--------------------------------")
-        # print(f"Highlight")
-        # print(f"event_times: {event_times}")
-        # print(f"min_datetime: {min_datetime}")
-        # print(f"max_datetime: {max_datetime}")
-        # print("--------------------------------")
-
-        if check_bounds:
-            if event_times[0] < min_datetime or event_times[1] > max_datetime:
-                continue
-
         ax.axvspan(event_times[0], 
                    event_times[1], 
                    color='blue', alpha=0.25, zorder=0)
 
+    # Reset the x-axis limits to the original limits
+    ax.set_xlim([minx, maxx])
 
-def add_event_lines(ax, curr_data_df, event_datetimes, check_bounds: bool = True):
+
+def add_event_lines(ax, event_datetimes):
     """
     Add vertical lines for the events if they are relevant to the current plot
 
     Inputs:
         ax: matplotlib.axes.Axes - The axes to plot on
-        curr_data_df: pd.DataFrame - The current data (for the datetime range)
         event_datetimes: list[datetime.datetime] - The event datetimes
-        check_bounds: bool - Whether to check if the event is within the bounds of the data
     
     Outputs:
         None, ax is modified in place
     """
-    # Get the datetime bounds of the plot since the events
-    # may be outside the bounds if the data was trimmed
-    min_datetime = curr_data_df['datetime'].iloc[0]
-    max_datetime = curr_data_df['datetime'].iloc[-1]
+    # Current axis limits
+    minx, maxx = ax.get_xlim()
 
     for event_time in event_datetimes:
-        # print("--------------------------------")
-        # print(f"Event line")
-        # print(f"event_time: {event_time}")
-        # print(f"min_datetime: {min_datetime}")
-        # print(f"max_datetime: {max_datetime}")
-        # print("--------------------------------")
-
-        if check_bounds:
-            if event_time < min_datetime or event_time > max_datetime:
-                continue
-
         ax.axvline(x=event_time, color='k', linestyle='--')
 
+    # Reset the x-axis limits to the original limits
+    ax.set_xlim([minx, maxx])
 
 def remove_outliers_from_data(data_df, outlier_value: float = 1e5, 
                               cols_to_ignore = ("rxTime")):
@@ -232,10 +207,10 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
                                 markerscale=3)
         
         if config.event_datetimes is not None:
-            add_event_lines(axes[var_id], curr_data_df, config.event_datetimes)
+            add_event_lines(axes[var_id], config.event_datetimes)
 
         if config.event_highlight_datetimes is not None:
-            add_event_highlight(axes[var_id], curr_data_df, config.event_highlight_datetimes)
+            add_event_highlight(axes[var_id], config.event_highlight_datetimes)
 
         if logy:
             axes[var_id].set_yscale('log')
@@ -501,10 +476,10 @@ def plot_datetime_histogram(data_dict: dict, sensor: str,
     minx, maxx = plt.xlim()
 
     if config.event_datetimes is not None:
-        add_event_lines(ax, curr_data_df, config.event_datetimes)
+        add_event_lines(ax, config.event_datetimes)
 
     if config.event_highlight_datetimes is not None:
-        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
+        add_event_highlight(ax, config.event_highlight_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     plt.xlim([minx, maxx])
@@ -594,10 +569,10 @@ def plot_sensor_interval(data_dict: dict, sensor: str,
                     label=f'{max_time_hr_str} hr gap')
 
     if config.event_datetimes is not None:
-        add_event_lines(ax, curr_data_df, config.event_datetimes)
+        add_event_lines(ax, config.event_datetimes)
 
     if config.event_highlight_datetimes is not None:
-        add_event_highlight(ax, curr_data_df, config.event_highlight_datetimes)
+        add_event_highlight(ax, config.event_highlight_datetimes)
 
     highlight_nighttime(ax, curr_data_df)
     ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', markerscale=3)
