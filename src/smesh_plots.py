@@ -67,7 +67,8 @@ def highlight_nighttime(ax, curr_data_df):
                    curr_sunrise_datetime, 
                    color='grey', alpha=0.25, zorder=0)
 
-def add_event_highlight(ax, curr_data_df, event_highlight_datetimes):
+def add_event_highlight(ax, curr_data_df, event_highlight_datetimes, 
+    check_bounds: bool = False):
     """
     Highlight the event datatimes in the plot
 
@@ -75,6 +76,7 @@ def add_event_highlight(ax, curr_data_df, event_highlight_datetimes):
         ax: matplotlib.axes.Axes - The axes to plot on
         curr_data_df: pd.DataFrame - The current data (for the datetime range)
         event_highlight_datetimes: list[list[datetime.datetime]] - A n x 2 list where each element contains the start and end interval of the event
+        check_bounds: bool - Whether to check if the event is within the bounds of the data
 
     Outputs:
         None, ax is modified in place
@@ -84,15 +86,24 @@ def add_event_highlight(ax, curr_data_df, event_highlight_datetimes):
     max_datetime = curr_data_df['datetime'].iloc[-1]
 
     for event_times in event_highlight_datetimes:
-        if event_times[0] > min_datetime and event_times[1] > min_datetime and event_times[0] < max_datetime and event_times[1] < max_datetime:
-            ax.axvspan(event_times[0], 
-                       event_times[1], 
-                       color='blue', alpha=0.25, zorder=0)
+
+        # print("--------------------------------")
+        # print(f"Highlight")
+        # print(f"event_times: {event_times}")
+        # print(f"min_datetime: {min_datetime}")
+        # print(f"max_datetime: {max_datetime}")
+        # print("--------------------------------")
+
+        if check_bounds:
+            if event_times[0] < min_datetime or event_times[1] > max_datetime:
+                continue
+
+        ax.axvspan(event_times[0], 
+                   event_times[1], 
+                   color='blue', alpha=0.25, zorder=0)
 
 
-
-
-def add_event_lines(ax, curr_data_df, event_datetimes):
+def add_event_lines(ax, curr_data_df, event_datetimes, check_bounds: bool = False):
     """
     Add vertical lines for the events if they are relevant to the current plot
 
@@ -100,6 +111,7 @@ def add_event_lines(ax, curr_data_df, event_datetimes):
         ax: matplotlib.axes.Axes - The axes to plot on
         curr_data_df: pd.DataFrame - The current data (for the datetime range)
         event_datetimes: list[datetime.datetime] - The event datetimes
+        check_bounds: bool - Whether to check if the event is within the bounds of the data
     
     Outputs:
         None, ax is modified in place
@@ -110,15 +122,63 @@ def add_event_lines(ax, curr_data_df, event_datetimes):
     max_datetime = curr_data_df['datetime'].iloc[-1]
 
     for event_time in event_datetimes:
-        if event_time > min_datetime and event_time < max_datetime:
-            ax.axvline(x=event_time, color='k', linestyle='--')
+        # print("--------------------------------")
+        # print(f"Event line")
+        # print(f"event_time: {event_time}")
+        # print(f"min_datetime: {min_datetime}")
+        # print(f"max_datetime: {max_datetime}")
+        # print("--------------------------------")
+
+        if check_bounds:
+            if event_time < min_datetime or event_time > max_datetime:
+                continue
+
+        ax.axvline(x=event_time, color='k', linestyle='--')
+
+
+def remove_outliers_from_data(data_df, outlier_value: float = 1e5, 
+                              cols_to_ignore = ("rxTime")):
+    """
+    Remove outliers from the data (absolute value is greater than outlier_value) 
+    by setting the outliers to NaN.
+
+    Inputs:
+        data_df: pd.DataFrame - The data to remove outliers from
+        outlier_multiplier: int - The multiplier for the standard deviation to remove outliers
+            Default is 1000
+        cols_to_ignore: tuple[str] - The columns to ignore when removing outliers
+            Default is ("rxTime")
+    Outputs:
+        data_df: pd.DataFrame - The data with outliers removed
+    """
+    num_nan_originally = data_df.isna().sum().sum()
+
+    # Only remove outliers if it is a numerical column
+    numerical_columns = data_df.select_dtypes(include=['number']).columns
+    numerical_columns = [col for col in numerical_columns if col not in cols_to_ignore]
+
+    for column in numerical_columns:
+        num_nan_in_column_originally = data_df[column].isna().sum()
+
+        index_of_outliers = np.abs(data_df[column]) > outlier_value
+        data_df.loc[index_of_outliers, column] = np.nan
+
+        num_nan_in_column_now = data_df[column].isna().sum()
+
+        if num_nan_in_column_now != num_nan_in_column_originally:
+            print_issue(f"Warning: {num_nan_in_column_now - num_nan_in_column_originally}" +
+            f" outliers were set to NaN from column {column}.")
+    
+    return data_df
+
 
 def plot_all_sensor_variables(data_dict: dict, sensor: str,
                               config: Config,
                               logy: bool = False,
                               alpha: float = 1.0,
                               group_col_id: str = 'from_short_name',
-                              use_labels: bool = True) -> tuple:
+                              use_labels: bool = True,
+                              remove_outliers: bool = True) -> tuple:
     """
     Plot each sensor variable as a new row in the subplots.
 
@@ -130,6 +190,7 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
         alpha: float - The alpha value for the scatter plot
         group_col_id: str - The column to group the data by
         use_labels: bool - Whether to use labels for the data
+        remove_outliers: bool - Whether to remove outliers from the data
     
     Outputs:
         fig: matplotlib.figure.Figure - The figure object
@@ -153,6 +214,9 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
 
     curr_data_df = data_dict[sensor]
 
+    if remove_outliers:
+        curr_data_df = remove_outliers_from_data(curr_data_df)
+
     for node_name, node_data in curr_data_df.groupby(group_col_id):
         if node_name not in GLOBAL_CMAP:
             GLOBAL_CMAP[node_name] = GLOBAL_COLORMAP_SOURCE(len(GLOBAL_CMAP))
@@ -174,8 +238,6 @@ def plot_all_sensor_variables(data_dict: dict, sensor: str,
 
         if config.event_highlight_datetimes is not None:
             add_event_highlight(axes[var_id], curr_data_df, config.event_highlight_datetimes)
-
-
 
         if logy:
             axes[var_id].set_yscale('log')
@@ -210,7 +272,8 @@ def plot_moving_averages(moving_avg_dict: dict,
                          data_dict: dict,
                          sensor: str, 
                          config: Config,
-                         logy: bool = False) -> tuple:
+                         logy: bool = False,
+                         remove_outliers: bool = True) -> tuple:
     """
     Plot the moving averages for the sensor variables
 
@@ -222,6 +285,7 @@ def plot_moving_averages(moving_avg_dict: dict,
         sensor: str - The sensor to plot
         config: Config - The configuration object
         logy: bool - Whether to use a log scale on the y-axis
+        remove_outliers: bool - Whether to remove outliers from the data
     
     Outputs:
         fig: matplotlib.figure.Figure - The figure object
@@ -237,7 +301,8 @@ def plot_moving_averages(moving_avg_dict: dict,
 
     fig, axes = plot_all_sensor_variables(data_dict, sensor, config,
                                             logy=logy, alpha=0.5,
-                                            use_labels=False)
+                                            use_labels=False,
+                                            remove_outliers=remove_outliers)
     
     for node_name, node_data in moving_avg_dict[sensor].items():
         if node_name not in GLOBAL_CMAP:
