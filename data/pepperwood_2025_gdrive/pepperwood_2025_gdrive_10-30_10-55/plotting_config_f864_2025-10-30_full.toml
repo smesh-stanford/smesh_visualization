@@ -54,5 +54,5 @@ EVENT_DATETIMES = [
     "2025-10-23 13:30:00", # Depart from Pepperwood
     "2025-10-24 14:15:00", # Rekindled smoke
     "2025-10-25 05:00:00", # Drizzle started
-    "2025-10-29 17:03:00", # Estimated last upload to GDrive
+    "2025-10-29 15:03:00", # Estimated last upload to GDrive
 ]
