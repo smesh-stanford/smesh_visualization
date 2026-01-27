@@ -1,2 +1,3 @@
 **/*.pyc
 raw_data/*
+external_data/*
