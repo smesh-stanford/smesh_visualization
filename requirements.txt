@@ -5,3 +5,4 @@ tqdm
 pip
 astral
 toml
+folium
