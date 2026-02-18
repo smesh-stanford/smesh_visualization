@@ -19,8 +19,8 @@ powerMetrics = []
 [IO_CONFIG]
 DATAFOLDERPATH = "data/jroo-2026-post-burn/"
 LOGGER = "376c"
-START_DATETIME = ""
-END_DATETIME = ""
+START_DATETIME = "2026-01-23 09:00:00"
+END_DATETIME = "2026-02-08 01:00:00"
 
 ########################################################
 # Plotting Configuration
@@ -35,10 +35,10 @@ MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
 LOG_Y_NAMES = ["airQualityMetrics"]
 
 [PLOTTING_CONFIG.INTERVAL_BOUNDS] # Seconds
-deviceMetrics = [30, 2000]
-environmentMetrics = [50, 2000]
-powerMetrics = [270, 2000]
-airQualityMetrics = [50, 2000]
+deviceMetrics = [30, 1000]
+environmentMetrics = [50, 250]
+powerMetrics = [270, 800]
+airQualityMetrics = [50, 500]
 
 ########################################################
 # Events Configuration

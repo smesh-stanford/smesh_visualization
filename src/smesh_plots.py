@@ -50,7 +50,7 @@ def highlight_nighttime(ax, curr_data_df):
     """
     # Fill in the x-axis with grey from 6pm to 6am to represent night time
     curr_data_df = curr_data_df.sort_values(by = "datetime")
-    curr_data_df = curr_data_df.dropna(subset = ["datetime"])
+    # curr_data_df = curr_data_df.dropna(subset = ["datetime"])
     earliest_day = curr_data_df['datetime'].iloc[0].date()
     latest_day = curr_data_df['datetime'].iloc[-1].date()
 
@@ -140,7 +140,7 @@ def remove_outliers_from_data(data_df, outlier_value: float = 1e5,
         num_nan_in_column_now = data_df[column].isna().sum()
 
         if num_nan_in_column_now != num_nan_in_column_originally:
-            print_issue(f"Warning: {num_nan_in_column_now - num_nan_in_column_originally}" +
+            print_issue(f"[Remove Outliers] Warning: {num_nan_in_column_now - num_nan_in_column_originally}" +
             f" outliers were set to NaN from column {column}.")
     
     return data_df
