@@ -4,14 +4,14 @@ import pathlib         # Nicer IO than the os library
 from terminal_utils import with_color, now_print, check_directory_cascade_exists
 
 
-def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
+def get_logger_data_files(logger_name: str, raw_data_dir: pathlib.Path,
                           has_logger_prefix: bool = True) -> list:
     """
     Get all the data files for a specific logger.
 
     Inputs:
         logger_name: str, name of the logger (4 digit short name)
-        data_dir: pathlib.Path, directory where the data is stored
+        raw_data_dir: pathlib.Path, directory where the data is stored
         has_logger_prefix: bool, whether the logger name starts the filename
     
     Outputs:
@@ -19,7 +19,7 @@ def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
     """
     if has_logger_prefix:
         # Get all the files in the data directory
-        data_files = list(data_dir.glob(f"{logger_name}_*.csv"))
+        data_files = list(raw_data_dir.glob(f"{logger_name}_*.csv"))
 
         now_print(f"Found {len(data_files)} files for logger " + \
                 f"{with_color(logger_name)}")
@@ -29,12 +29,12 @@ def get_logger_data_files(logger_name: str, data_dir: pathlib.Path,
             
             # Rerun this function to get the files for this logger
             data_files, has_logger_prefix = get_logger_data_files(
-                logger_name, data_dir, has_logger_prefix=False)
+                logger_name, raw_data_dir, has_logger_prefix=False)
     else:
-        now_print(f"Assuming no logger name prefix at directory {data_dir}")
+        now_print(f"Assuming no logger name prefix at directory {raw_data_dir}")
 
         # We assume all the files are for this logger
-        data_files = list(data_dir.glob("*.csv"))
+        data_files = list(raw_data_dir.glob("*.csv"))
 
         now_print(f"Found {len(data_files)} files for logger " + \
                 f"{with_color(logger_name)}")
@@ -75,7 +75,10 @@ def group_sensor_files(data_filenames, has_logger_prefix: bool = True):
         if sensor_type not in data_files_dict:
             data_files_dict[sensor_type] = []
         data_files_dict[sensor_type].append(data_file)
-    
+
+    for sensor_type in data_files_dict:
+        data_files_dict[sensor_type].sort(key=lambda p: p.name)
+
     return data_files_dict
 
 
@@ -117,8 +120,8 @@ def concat_sensor_data(sensor_files: list, output_file: pathlib.Path,
 
 
 def concat_logger_data(logger_name: str, 
-                       data_dir: pathlib.Path, 
-                       output_dir: pathlib.Path,
+                       raw_data_dir: pathlib.Path, 
+                       output_data_dir: pathlib.Path,
                        data_has_header: bool = True) -> None:
     """
     Concatenate data from the same logger into one file. Note that the data
@@ -159,23 +162,23 @@ def concat_logger_data(logger_name: str,
 
     Inputs:
         logger_name: str, name of the logger (4 digit short name)
-        data_dir: pathlib.Path, directory where the data is stored
+        raw_data_dir: pathlib.Path, directory where the data is stored
         output_dir: pathlib.Path, directory where the output should be stored
         data_has_header: bool, whether the data has a header
     
     Outputs:
         None, writes the concatenated data into the output_dir
     """
-    data_dir = pathlib.Path(data_dir)
-    output_dir = pathlib.Path(output_dir)
+    raw_data_dir = pathlib.Path(raw_data_dir)
+    output_data_dir = pathlib.Path(output_data_dir)
 
     # Check that these are indeed directories
-    assert check_directory_cascade_exists(data_dir)
-    assert check_directory_cascade_exists(output_dir)
+    assert check_directory_cascade_exists(raw_data_dir)
+    assert check_directory_cascade_exists(output_data_dir)
 
-    # assert data_dir.is_dir(), f"{data_dir} is not a directory. " + \
+    # assert raw_data_dir.is_dir(), f"{data_dir} is not a directory. " + \
     #     f"The current working directory is {pathlib.Path.cwd()}. " + \
-    #     f"The parent directory is {data_dir.parent}. Is this a directory? " + \
+    #     f"The parent directory is {raw_data_dir.parent}. Is this a directory? " + \
     #     f"{data_dir.parent.is_dir()}"
     # assert output_dir.is_dir(), f"{output_dir} is not a directory." + \
     #     f"The current working directory is {pathlib.Path.cwd()}. " + \
@@ -183,7 +186,7 @@ def concat_logger_data(logger_name: str,
     #     f"{output_dir.parent.is_dir()}"
 
     # Get all the data files for the logger
-    data_files, has_logger_prefix = get_logger_data_files(logger_name, data_dir)
+    data_files, has_logger_prefix = get_logger_data_files(logger_name, raw_data_dir)
 
     # Group the files by the type of data they contain
     data_files_dict = group_sensor_files(data_files, has_logger_prefix)
@@ -191,7 +194,7 @@ def concat_logger_data(logger_name: str,
     # Concatenate the data
     for sensor_type, data_files in data_files_dict.items():
         # Output file
-        output_file = output_dir / f"{logger_name}_{sensor_type}.csv"
+        output_file = output_data_dir / f"{logger_name}_{sensor_type}.csv"
         now_print(f"Concatenating {with_color(sensor_type)} data for " + \
                   f"{with_color(logger_name)} to {output_file}...")
 

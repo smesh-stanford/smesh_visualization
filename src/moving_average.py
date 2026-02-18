@@ -37,7 +37,7 @@ def moving_average_per_node(df: pd.DataFrame,
     # print a warning if any are removed
     num_na = df[datetime_col].isna().sum()
     if num_na > 0:
-        print_issue(f"Warning: {num_na} rows have NaT values in the " + \
+        print_issue(f"[Moving Average] Warning: {num_na} rows have NaT values in the " + \
                     f"datetime column ({datetime_col}). These will be removed.")
         df = df.dropna(subset=[datetime_col])
 
