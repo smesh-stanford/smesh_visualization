@@ -29,7 +29,7 @@ from terminal_utils import with_color, now_print
 # Main (should integrate with tyro)
 ######################################################################
 
-def main(config_filepath):
+def main(config_filepath, verbose: bool = False):
     """
     Main function for generating all the plots requested in the configuration.
     """
@@ -42,7 +42,7 @@ def main(config_filepath):
         f"Check the path. Current working directory: {pathlib.Path.cwd()}"
 
     now_print(f"Loading data...")
-    smesh_data_dfs = read_csv_data_from_logger(config)
+    smesh_data_dfs = read_csv_data_from_logger(config, verbose=verbose)
         # extension="_modified.csv")
     now_print(f"... Data loaded!")
 
@@ -202,8 +202,9 @@ if __name__ == "__main__":
 
     ######################################################################
 
-    if len(sys.argv) > 1:
-        config_filepath_arg = sys.argv[1]
-        config_filepath = pathlib.Path(config_filepath_arg)
+    verbose = "--verbose" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--verbose"]
+    if args:
+        config_filepath = pathlib.Path(args[0])
 
-    main(config_filepath)
+    main(config_filepath, verbose=verbose)

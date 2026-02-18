@@ -6,6 +6,8 @@ import datetime
 import toml
 import pandas as pd
 
+from terminal_utils import print_issue
+
 
 @dataclasses.dataclass
 class Config:
@@ -163,7 +165,7 @@ class Config:
 
         
 
-        return cls(
+        config = cls(
             csv_has_headers=csv_has_headers,
             base_headers=sensor_config["BASE_HEADERS"],
             network_headers=sensor_config["NETWORK_HEADERS"],
@@ -182,7 +184,25 @@ class Config:
             moving_average_window_size_min=moving_average_window_size_min,
             event_highlight_datetimes=event_highlight_datetimes
         )
-    
+        config.validate_interval_bounds()
+        return config
+
+    def validate_interval_bounds(self) -> None:
+        """
+        Warn if PLOTTING_CONFIG.INTERVAL_BOUNDS keys do not match sensor names.
+        Bounds are only applied when keys match; this helps users fix their TOML.
+        """
+        interval_keys = set(self.interval_bounds.keys())
+        sensor_set = set(self.sensor_names)
+        matching = interval_keys & sensor_set
+        if interval_keys and not matching:
+            print_issue(
+                "INTERVAL_BOUNDS keys do not match sensor names. "
+                f"Config has: {sorted(interval_keys)}. "
+                f"Sensors are: {sorted(sensor_set)}. "
+                "Use sensor names (e.g. deviceMetrics, airQualityMetrics) as keys "
+                "in PLOTTING_CONFIG.INTERVAL_BOUNDS for bounds to apply."
+            )
 
     def update_headers(self, data_dfs: Dict[str, pd.DataFrame]):
         """

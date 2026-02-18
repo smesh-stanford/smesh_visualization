@@ -30,7 +30,8 @@ def get_short_name(df: pd.DataFrame):
     return df[from_node_col].str[-4:]
 
 
-def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
+def read_csv_data_from_logger(config: Config, extension: str = ".csv",
+                             verbose: bool = False) -> dict:
     """
     Find the relevant data read from a specified logger node and form a pandas
     dataframe for each of the datasets.
@@ -80,7 +81,10 @@ def read_csv_data_from_logger(config: Config, extension: str = ".csv") -> dict:
         # 'coerce' means that if the conversion fails, it will return NaT
         data_dfs[sensor]['datetime'] = pd.to_datetime(
             data_dfs[sensor]['datetime'], errors='coerce')
-        
+
+        data_dfs[sensor] = drop_corrupted_rows(data_dfs[sensor], sensor,
+                                               verbose=verbose)
+
         # Include the short name out of convenience
         data_dfs[sensor]['from_short_name'] = get_short_name(data_dfs[sensor])
 
@@ -115,6 +119,31 @@ def fill_empty_pm_data(pm_df: pd.DataFrame, header_prefix: str = "pm") -> pd.Dat
         pm_df[header] = pm_df[header].fillna(0)
 
     return pm_df
+
+
+def drop_corrupted_rows(df: pd.DataFrame, sensor: str, verbose: bool = False) -> pd.DataFrame:
+    """
+    Remove rows corrupted by logger write failures (e.g. null characters).
+    Drops rows with NaT datetime or rows that are entirely NaN.
+    """
+    is_nat = df["datetime"].isna()
+    is_all_nan = df.isna().all(axis=1)
+    to_drop = is_nat | is_all_nan
+
+    if to_drop.any():
+        dropped = to_drop.sum()
+        if verbose:
+            # Show context: dropped rows plus rows immediately before and after
+            before_drop = to_drop.shift(-1, fill_value=False)
+            after_drop = to_drop.shift(1, fill_value=False)
+            context_mask = to_drop | before_drop | after_drop
+            print_issue(f"Removed {dropped} corrupted rows from {sensor}:")
+            print(df[context_mask])
+        else:
+            print_issue(f"Removed {dropped} corrupted rows from {sensor}. "
+                       "Use --verbose to see dropped rows and context.")
+        df = df[~to_drop]
+    return df
 
 
 def read_radio_data_from_sensor_data(data_dfs: dict, 
