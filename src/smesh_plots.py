@@ -50,6 +50,7 @@ def highlight_nighttime(ax, curr_data_df):
     """
     # Fill in the x-axis with grey from 6pm to 6am to represent night time
     curr_data_df = curr_data_df.sort_values(by = "datetime")
+    curr_data_df = curr_data_df.dropna(subset = ["datetime"])
     earliest_day = curr_data_df['datetime'].iloc[0].date()
     latest_day = curr_data_df['datetime'].iloc[-1].date()
 
