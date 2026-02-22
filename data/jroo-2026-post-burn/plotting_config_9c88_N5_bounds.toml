@@ -1,0 +1,53 @@
+########################################################
+#  Sensor Configuration
+########################################################
+
+[SENSOR_CONFIG]
+BASE_HEADERS = ["datetime", "fromNode"]
+NETWORK_HEADERS = []
+
+[SENSOR_CONFIG.SENSOR_HEADERS]
+airQualityMetrics = []
+deviceMetrics = []
+environmentMetrics = []
+powerMetrics = []
+            
+########################################################
+# IO Configuration
+########################################################
+
+[IO_CONFIG]
+DATAFOLDERPATH = "data/jroo-2026-post-burn/"
+LOGGER = "9c88"
+START_DATETIME = "2026-01-24 00:00:00"
+END_DATETIME = "2026-01-26 00:00:00"
+
+########################################################
+# Plotting Configuration
+########################################################
+
+[PLOTTING_CONFIG]
+PLOTFOLDERPATH = "plots/jroo-2026-post-burn/"
+DPI = 300
+
+MOVING_AVERAGE_WINDOW_SIZE_MIN = 10 # Minutes
+
+LOG_Y_NAMES = ["airQualityMetrics"]
+
+[PLOTTING_CONFIG.INTERVAL_BOUNDS] # Seconds
+deviceMetrics = [30, 1000]
+environmentMetrics = [50, 250]
+powerMetrics = [270, 800]
+airQualityMetrics = [50, 500]
+
+########################################################
+# Events Configuration
+########################################################
+
+[EVENTS_CONFIG]
+EVENT_DATETIMES = [
+    "2026-01-23 12:30:00", # Arrived to set up the first round of snodes
+    "2026-01-25 13:45:00", # Arrived to set up the second round of snodes
+    "2026-02-10 13:20:00", # Switch out battery of 376c and move to new location
+    "2026-02-15 14:30:00", # Equipment back at radio club
+]
